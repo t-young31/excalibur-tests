@@ -1,0 +1,10 @@
+
+all: html
+
+html: clean_html
+	# Create plots of the benchmark data and inject into the HTML
+	python inject_plots.py
+
+
+clean_html:
+	rm -f *.html
