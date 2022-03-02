@@ -1,7 +1,8 @@
 import os
-from typing import Dict, Tuple, List
+from typing import Dict, Tuple, List, Union, Sequence
 from abc import ABC, abstractmethod
 from glob import glob
+from pathlib import Path
 from bokeh.plotting import figure
 from bokeh.models import HoverTool, ColumnDataSource
 from bokeh.embed import components
@@ -10,12 +11,13 @@ from bokeh.io import curdoc
 
 plots = {
     # Bar plot for all clusters using openmpi builds, imb benchmark, PingPong
-    0: ('bar', '*/*openmpi*/imb/IMB_PingPong.log')
+    0: ('bar', 'max_bandwidth', ('*/*openmpi*/imb/*PingPong*/*.log',
+                                 '*/*omp*/imb/*PingPong*/*.log'))
 }
 
 
-def inject_all(plots_dict:    Dict[int, Tuple],
-               html_filename: str
+def inject_all(plots_dict:        Dict[int, Tuple],
+               template_filename: str
                ) -> None:
     """
     Inject all the plots defined in a dictionary
@@ -26,11 +28,11 @@ def inject_all(plots_dict:    Dict[int, Tuple],
                     defining the location of the data. Relative to the
                     perflogs folder in the root directory
 
-        html_filename: Name of the html file to inject into. Relative to the
+        template_filename: Name of the html file to inject into. Relative to the
                        the same directory as this file
     """
 
-    for plot_idx, (plot_type_str, files_path) in plots_dict.items():
+    for plot_idx, (plot_type_str, metric, files_path) in plots_dict.items():
 
         if plot_type_str.lower() == 'bar':
             plot_type = BarPlot
@@ -41,23 +43,31 @@ def inject_all(plots_dict:    Dict[int, Tuple],
         else:
             raise ValueError(f'Unsupported plot type: {plot_type_str}')
 
-        plot = plot_type(files_path)
+        plot = plot_type(metric, files_path)
 
-        plot.target = HTMLFile(html_filename)
+        plot.target = HTMLFile(template_filename)
         plot.inject_script()
         plot.inject_div_at(plot_idx)
 
     return None
 
 
-class HTMLFile:
+class File:
 
-    def __init__(self, filename):
-        self._template_filename = filename
+    @staticmethod
+    def _check_exists(filename):
 
         if not os.path.exists(filename):
             raise IOError(f'Cannot create a file from {filename} - it did '
                           f'not exist')
+
+
+class HTMLFile(File):
+
+    def __init__(self, filename):
+
+        self._check_exists(filename)
+        self._template_filename = filename
 
     @property
     def _filename(self) -> str:
@@ -109,9 +119,61 @@ class HTMLFile:
         return None
 
 
+class ReFrameLogFile(File):
+
+    def __init__(self, filename):
+
+        self._check_exists(filename)
+        self._filename = filename
+
+    @property
+    def file_lines(self) -> List[str]:
+        return open(self._filename, 'r').readlines()
+
+    def extract_value(self, metric: str) -> float:
+        """
+        Extract the value of a metric from the file
+
+        -----------------------------------------------------------------------
+        Arguments:
+            metric:
+
+        Raises:
+            (IOError): If the file cannot be found
+            (RuntimeError): If the metric cannot be found
+        """
+
+        try:
+            line = next(l for l in self.file_lines if metric in l)
+            pair = next(item for item in line.split('|') if metric in item)
+            return float(pair.split('=')[-1])
+
+        except (StopIteration, ValueError, TypeError, IndexError):
+            raise RuntimeError(f'Failed to find {metric} in {self._filename}')
+
+    def extract_units(self, metric: str) -> str:
+        """Extract the units of a particular metric"""
+
+        def first_line_with_metric():
+            return next(l for l in self.file_lines if metric in l)
+
+        def first_item_with_metric_in_item_before(xs):
+            return next(x for i, x in enumerate(xs[1:]) if metric in xs[i])
+
+        try:
+            items = first_line_with_metric().split('|')
+            return first_item_with_metric_in_item_before(items)
+
+        except (StopIteration, ValueError, TypeError, IndexError):
+            raise RuntimeError(f'Failed to find {metric} in {self._filename}')
+
+
 class Plot(ABC):
 
-    def __init__(self, files_path: str):
+    def __init__(self,
+                 metric:     str,
+                 files_path: Union[Tuple[str], str]
+                 ):
         """
         Construct a plot given a path to a set of output files.
 
@@ -123,17 +185,56 @@ class Plot(ABC):
 
         -----------------------------------------------------------------------
         Arguments:
-            files_path: .log files that can be glob-ed
+            metric: Name of the performance metric to look for in the reframe
+                    log
+
+            files_path: .log files that can be glob-ed. Either a single string
+                        or a sqeuence (e.g. tuple)
         """
 
+        self._metric = metric
         self._target = None
-        self.file_names = glob(os.path.join('..', 'perflogs', files_path))
+        self._file_names = []
+
+        if isinstance(files_path, str):
+            files_path = tuple(files_path)
+
+        for path in files_path:
+            self._file_names += glob(os.path.join('..', 'perflogs', path))
 
         self._script, self._div = self.bokeh_components()
 
     @abstractmethod
     def bokeh_components(self) -> Tuple[str, str]:
         """Retrieve the script and div components of a Bokeh plot"""
+
+    @property
+    def title(self) -> str:
+        """
+        Generate a title of a plot, generated from the end of the file
+        path(s) which store the data.
+        """
+
+        fns = [Path(f) for f in self._file_names]
+
+        if len(fns) == 0:
+            raise RuntimeError('Cannot generate a title without any data files')
+
+        first_filename = fns[0].name
+
+        if not all(f.name == first_filename for f in fns):
+            raise RuntimeError('Cannot generate a title. Some files were '
+                               'not named identically')
+
+        return Path(first_filename).stem
+
+    @property
+    def _units(self) -> str:
+        """Extract the units from a ReFrame log file for a particular metric"""
+        if len(self._file_names) == 0:
+            raise RuntimeError('Cannot determine the units. Had no files')
+
+        return ReFrameLogFile(self._file_names[0]).extract_units(self._metric)
 
     @property
     def target(self) -> HTMLFile:
@@ -184,29 +285,33 @@ class Plot(ABC):
 class BarPlot(Plot):
 
     def bokeh_components(self) -> Tuple[str, str]:
+        """Generate script and div components for a Bokeh bar plot"""
 
-        # TODO: Get the correct data here
-        x = [1, 2, 3, 4, 5]
-        y = [6, 7, 6, 4, 5]
+        x = self._file_names
+        y = [ReFrameLogFile(f).extract_value(self._metric) for f in self._file_names]
 
         curdoc().theme = 'caliber'
 
-        hover = HoverTool(tooltips=[('Description', '@category'),
+        hover = HoverTool(tooltips=[('Description', '@desc'),
                                     ('Value', '@value')],
                           mode='vline')
 
-        plot = figure(title='caliber', width=500, height=500)
-        plot.vbar(x='category',
+        plot = figure(title=self.title,
+                      width=500,
+                      height=500)
+
+        plot.vbar(x='index',
                   top='value',
                   width=0.9,
-                  source=ColumnDataSource(data={'category': x,
-                                                'value': y})
+                  source=ColumnDataSource(data={'index': range(len(x)),
+                                                'value': y,
+                                                'desc': x})
                   )
 
         plot.add_tools(hover)
 
         plot.xaxis.axis_label = 'Category'
-        plot.yaxis.axis_label = 'Value'
+        plot.yaxis.axis_label = f'{self._metric} / {self._units}'
 
         self._set_default_style(plot)
         return components(plot)
