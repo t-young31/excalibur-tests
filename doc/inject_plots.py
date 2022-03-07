@@ -1,5 +1,6 @@
 import os
-from typing import Dict, Tuple, List, Union, Sequence
+from typing import Dict, Tuple, List, Union, Sequence, Iterator
+from datetime import date
 from abc import ABC, abstractmethod
 from glob import glob
 from pathlib import Path
@@ -92,8 +93,7 @@ class HTMLFile(File):
 
                 print(line, file=html_file, end='', sep='')
 
-            # Print the final line
-            print(lines[-1], file=html_file)
+            print(lines[-1], file=html_file)  # Print the excluded final line
 
         return None
 
@@ -120,17 +120,37 @@ class HTMLFile(File):
 
 
 class ReFrameLogFile(File):
+    """
+    ReFrame log file with a format:
 
-    def __init__(self, filename):
+    #--------------------------------------------------------------------------
+
+    2020-08-19T16:20:21+01:00|.|IMB_.|max_bandwidth=3041.25|Mbytes/sec|.|.
+    2020-08-19T16:20:21+01:00|.|IMB_.|min_latency=2.05|t[usec]|.|.
+    2020-09-09T10:30:12+01:00|.|IMB_.|.|max_bandwidth=3039.31|Mbytes/sec|.|.
+    .            .            .   .   .     .                   .        .
+
+    #--------------------------------------------------------------------------
+
+    where dots denote abbreviated strings
+    """
+
+    def __init__(self, filename, metric=None):
 
         self._check_exists(filename)
-        self._filename = filename
+        self.filename = filename
+
+        self.values:       List[float] = []
+        self.dates:        List[date] = []
+
+        if metric is not None:
+            self.extract(metric)
 
     @property
     def file_lines(self) -> List[str]:
-        return open(self._filename, 'r').readlines()
+        return open(self.filename, 'r').readlines()
 
-    def extract_value(self, metric: str) -> float:
+    def extract_values(self, metric: str) -> None:
         """
         Extract the value of a metric from the file
 
@@ -143,15 +163,18 @@ class ReFrameLogFile(File):
             (RuntimeError): If the metric cannot be found
         """
 
+        self.values.clear()
+
         try:
-            line = next(l for l in self.file_lines if metric in l)
-            pair = next(item for item in line.split('|') if metric in item)
-            return float(pair.split('=')[-1])
+            for line  in filter(lambda l: metric in l, self.file_lines):
+
+                pair = next(item for item in line.split('|') if metric in item)
+                self.values.append(float(pair.split('=')[-1]))
 
         except (StopIteration, ValueError, TypeError, IndexError):
-            raise RuntimeError(f'Failed to find {metric} in {self._filename}')
+            raise RuntimeError(f'Failed to find {metric} in {self.filename}')
 
-    def extract_units(self, metric: str) -> str:
+    def units_of(self, metric: str) -> str:
         """Extract the units of a particular metric"""
 
         def first_line_with_metric():
@@ -165,14 +188,35 @@ class ReFrameLogFile(File):
             return first_item_with_metric_in_item_before(items)
 
         except (StopIteration, ValueError, TypeError, IndexError):
-            raise RuntimeError(f'Failed to find {metric} in {self._filename}')
+            raise RuntimeError(f'Failed to find {metric} in {self.filename}')
+
+    def extract_dates(self, metric: str) -> None:
+        """Extract the times at which the metric was evaluated"""
+
+        self.dates.clear()
+
+        try:
+            for line in filter(lambda l: metric in l, self.file_lines):
+                time_str = line.split('T')[0]
+                self.dates.append(date.fromisoformat(time_str))
+
+        except (StopIteration, ValueError, TypeError, IndexError):
+            raise RuntimeError(f'Failed to find {metric} in {self.filename}')
+
+    def extract(self, metric: str) -> None:
+        """Extract the relevant information from a ReFrame log file"""
+
+        self.extract_values(metric)
+        self.extract_dates(metric)
+
+        return None
 
 
 class Plot(ABC):
 
     def __init__(self,
                  metric:     str,
-                 files_path: Union[Tuple[str], str]
+                 files_path: Union[Sequence[str], str]
                  ):
         """
         Construct a plot given a path to a set of output files.
@@ -194,15 +238,23 @@ class Plot(ABC):
 
         self._metric = metric
         self._target = None
-        self._file_names = []
+        self._log_files = []
 
-        if isinstance(files_path, str):
-            files_path = tuple(files_path)
+        for path in self.file_paths_from(files_path):
 
-        for path in files_path:
-            self._file_names += glob(os.path.join('..', 'perflogs', path))
+            f = ReFrameLogFile(path, metric=metric)
+            self._log_files.append(f)
 
         self._script, self._div = self.bokeh_components()
+
+    @staticmethod
+    def file_paths_from(paths: Union[Sequence[str], str]) -> Iterator:
+        """Generate a set of file paths from either a single path or a
+        tuple of paths"""
+
+        for path in tuple(paths):
+            for file_path in glob(os.path.join('..', 'perflogs', path)):
+                yield file_path
 
     @abstractmethod
     def bokeh_components(self) -> Tuple[str, str]:
@@ -215,7 +267,7 @@ class Plot(ABC):
         path(s) which store the data.
         """
 
-        fns = [Path(f) for f in self._file_names]
+        fns = [Path(f.filename) for f in self._log_files]
 
         if len(fns) == 0:
             raise RuntimeError('Cannot generate a title without any data files')
@@ -231,10 +283,10 @@ class Plot(ABC):
     @property
     def _units(self) -> str:
         """Extract the units from a ReFrame log file for a particular metric"""
-        if len(self._file_names) == 0:
+        if len(self._log_files) == 0:
             raise RuntimeError('Cannot determine the units. Had no files')
 
-        return ReFrameLogFile(self._file_names[0]).extract_units(self._metric)
+        return self._log_files[0].units_of(self._metric)
 
     @property
     def target(self) -> HTMLFile:
@@ -287,13 +339,17 @@ class BarPlot(Plot):
     def bokeh_components(self) -> Tuple[str, str]:
         """Generate script and div components for a Bokeh bar plot"""
 
-        x = self._file_names
-        y = [ReFrameLogFile(f).extract_value(self._metric) for f in self._file_names]
+        x = [f.filename for f in self._log_files]
+
+        # TODO: enable more than the first value to be extracted
+        y = [f.values[0] for f in self._log_files]
+        dates = [f.dates[0] for f in self._log_files]
 
         curdoc().theme = 'caliber'
 
         hover = HoverTool(tooltips=[('Description', '@desc'),
-                                    ('Value', '@value')],
+                                    ('Value', '@value'),
+                                    ('Date', '@date')],
                           mode='vline')
 
         plot = figure(title=self.title,
@@ -305,7 +361,8 @@ class BarPlot(Plot):
                   width=0.9,
                   source=ColumnDataSource(data={'index': range(len(x)),
                                                 'value': y,
-                                                'desc': x})
+                                                'desc': x,
+                                                'date': dates})
                   )
 
         plot.add_tools(hover)
