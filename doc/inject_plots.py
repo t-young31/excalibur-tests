@@ -5,7 +5,7 @@ from abc import ABC, abstractmethod
 from glob import glob
 from pathlib import Path
 from bokeh.plotting import figure
-from bokeh.models import HoverTool, ColumnDataSource
+from bokeh.models import HoverTool, ColumnDataSource, TickFormatter
 from bokeh.embed import components
 from bokeh.io import curdoc
 
@@ -13,7 +13,10 @@ from bokeh.io import curdoc
 plots = {
     # Bar plot for all clusters using openmpi builds, imb benchmark, PingPong
     0: ('bar', 'max_bandwidth', ('*/*openmpi*/imb/*PingPong*/*.log',
-                                 '*/*omp*/imb/*PingPong*/*.log'))
+                                 '*/*omp*/imb/*PingPong*/*.log')),
+
+    1: ('bar', 'Gflops', ('*/*openmpi*/hpl/Hpl_single/*.log',
+                          '*/*omp*/hpl/Hpl_single/*.log'))
 }
 
 
@@ -89,7 +92,7 @@ class HTMLFile(File):
             for i, line in enumerate(lines[:-1]):
 
                 if '</body>' in lines[i+1]:
-                    print(string, file=html_file, end='', sep='')
+                    print(string, file=html_file, end='\n', sep='')
 
                 print(line, file=html_file, end='', sep='')
 
@@ -106,8 +109,8 @@ class HTMLFile(File):
         with open(self._filename, 'w') as html_file:
             for line in lines:
 
-                if line == f'{idx}\n':
-                    print(string, file=html_file, end='', sep='')
+                if line.endswith(f'{idx}\n'):
+                    print(string, file=html_file, sep='')
                     found_idx = True
 
                 else:
@@ -116,6 +119,7 @@ class HTMLFile(File):
         if not found_idx:
             raise RuntimeError(f"Replacement failed: failed to find {idx} in "
                                f"{self._template_filename}.")
+
         return None
 
 
@@ -149,6 +153,14 @@ class ReFrameLogFile(File):
     @property
     def file_lines(self) -> List[str]:
         return open(self.filename, 'r').readlines()
+
+    @property
+    def file_path_alt(self) -> str:
+        return '/'.join(self.filename.split('/')[2:])
+
+    @property
+    def file_path_truncated(self) -> str:
+        return f'...{self.filename[-12:-4]}'
 
     def extract_values(self, metric: str) -> None:
         """
@@ -289,6 +301,11 @@ class Plot(ABC):
         return self._log_files[0].units_of(self._metric)
 
     @property
+    def n_files(self) -> int:
+        """Number of data files that comprise this plot"""
+        return len(self._log_files)
+
+    @property
     def target(self) -> HTMLFile:
         return self._target
 
@@ -339,7 +356,7 @@ class BarPlot(Plot):
     def bokeh_components(self) -> Tuple[str, str]:
         """Generate script and div components for a Bokeh bar plot"""
 
-        x = [f.filename for f in self._log_files]
+        x = [f.file_path_alt for f in self._log_files]
 
         # TODO: enable more than the first value to be extracted
         y = [f.values[0] for f in self._log_files]
@@ -353,21 +370,28 @@ class BarPlot(Plot):
                           mode='vline')
 
         plot = figure(title=self.title,
-                      width=500,
-                      height=500)
+                      width=400,
+                      height=400)
 
         plot.vbar(x='index',
                   top='value',
                   width=0.9,
-                  source=ColumnDataSource(data={'index': range(len(x)),
+                  source=ColumnDataSource(data={'index': range(self.n_files),
                                                 'value': y,
                                                 'desc': x,
                                                 'date': dates})
                   )
 
         plot.add_tools(hover)
-
+        plot.select(precision='int')
         plot.xaxis.axis_label = 'Category'
+
+        plot.xaxis.ticker = list(range(self.n_files))
+        plot.xaxis.major_label_overrides = {
+            i: f.file_path_truncated for i, f in enumerate(self._log_files)
+        }
+        plot.xaxis.minor_tick_line_color = None
+
         plot.yaxis.axis_label = f'{self._metric} / {self._units}'
 
         self._set_default_style(plot)
