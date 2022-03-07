@@ -8,3 +8,6 @@ html: clean_html
 
 clean_html:
 	rm -f *.html
+
+clean:
+	rm -f .regression_plot.txt
