@@ -16,6 +16,8 @@ setup/.sslconfig
 Miniconda*.sh
 working/
 outdated/
+.idea/
+*.DS_Store
 
 # jupyter checkpoints:
 *-checkpoint.ipynb
