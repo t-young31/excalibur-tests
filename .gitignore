@@ -17,7 +17,9 @@ Miniconda*.sh
 working/
 outdated/
 .idea/
-*.DS_Store
+.DS_Store
+doc/.*
+doc/*.html
 
 # jupyter checkpoints:
 *-checkpoint.ipynb
