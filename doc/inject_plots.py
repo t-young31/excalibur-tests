@@ -6,7 +6,7 @@ from abc import ABC, abstractmethod
 from glob import glob
 from pathlib import Path
 from bokeh.plotting import figure
-from bokeh.models import HoverTool, ColumnDataSource
+from bokeh.models import HoverTool, ColumnDataSource, Range1d, FixedTicker
 from bokeh.palettes import Dark2_5 as palette
 from bokeh.embed import components
 from bokeh.io import curdoc
@@ -518,34 +518,73 @@ class TimeSeriesRegressionPlot(Plot):
 
                 init_value = f.values[0]
                 for d, v in zip(f.dates, f.values):
-                    dates.append(d.strftime('%s'))
+                    dates.append(d.toordinal())
                     rel_values.append(v/init_value)
+
+                if any(v/init_value > 3 for v in f.values):
+                    print('WARNING: Large rel change in:', fn)
 
         return dates, rel_values
 
     def bokeh_components(self) -> Tuple[str, str]:
 
-        plot = figure(title='Timeseries regression',
+        plot = figure(title='Time series regression',
                       width=800,
                       height=400,
                       y_range=(0.6, 4))
 
         for (cluster_name, xy), c in zip(self.data.items(), self.colours):
 
-            xs = sorted(xy['x'])
+            xs = [x for x in sorted(xy['x'])]
+
+            # Sort values by the x value low->high
             ys = [y for _, y in sorted(zip(xy['x'], xy['y']))]
 
-            plot.line(x=xs,
-                      y=ys,
+            plot.line(xs,
+                      ys,
                       legend_label=cluster_name,
-                      color=c
+                      color=c,
+                      line_width=2
                       )
 
         plot.legend.location = "top_left"
         plot.yaxis.axis_label = 'Relative metric'
 
+        self._set_x_ticks(plot)
         self._set_default_style(plot)
+
         return components(plot)
+
+    def _set_x_ticks(self, plot) -> None:
+
+        min_x, max_x = 2 ** 99, 0
+
+        for cluster_name, xy in self.data.items():
+
+            xs = xy['x']
+
+            if max(xs) > max_x:
+                max_x = max(xs)
+
+            if min(xs) < min_x:
+                min_x = min(xs)
+
+        plot.x_range = Range1d(min_x - 1, max_x + 1)
+        x_tick_pos = linspace(min_x, max_x, num=8)
+
+        plot.xaxis.ticker = x_tick_pos
+        plot.xaxis.major_label_overrides = {
+            x: str(date.fromordinal(int(x))) for x in x_tick_pos
+        }
+
+        plot.xaxis.ticker.num_minor_ticks = 0
+
+        return None
+
+
+def linspace(start, end, num) -> List[float]:
+    delta = (end - start) / (num - 1)
+    return [start + i*delta for i in range(num)]
 
 
 if __name__ == '__main__':
