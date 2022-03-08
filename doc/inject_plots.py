@@ -473,8 +473,8 @@ class TimeSeriesRegressionPlot(Plot):
                 k, v = line.split(':')
                 xs, ys = v.split('|')
 
-                self.data[k] = {'x': (float(x) for x in xs.split(',')),
-                                'y': (float(y) for y in ys.split(','))}
+                self.data[k] = {'x': [float(x) for x in xs.split(',')],
+                                'y': [float(y) for y in ys.split(',')]}
         return None
 
     def _extract_data(self) -> None:
@@ -556,12 +556,12 @@ class TimeSeriesRegressionPlot(Plot):
         return components(plot)
 
     def _set_x_ticks(self, plot) -> None:
+        """Set the x range of the entire date history of the benchmark set.
+        Then set the tick labels to dates"""
 
         min_x, max_x = 2 ** 99, 0
 
-        for cluster_name, xy in self.data.items():
-
-            xs = xy['x']
+        for xs in (xy['x'] for xy in self.data.values()):
 
             if max(xs) > max_x:
                 max_x = max(xs)
@@ -569,7 +569,7 @@ class TimeSeriesRegressionPlot(Plot):
             if min(xs) < min_x:
                 min_x = min(xs)
 
-        plot.x_range = Range1d(min_x - 1, max_x + 1)
+        plot.x_range = Range1d(min_x, max_x + 1)
         x_tick_pos = linspace(min_x, max_x, num=8)
 
         plot.xaxis.ticker = x_tick_pos
@@ -582,9 +582,10 @@ class TimeSeriesRegressionPlot(Plot):
         return None
 
 
-def linspace(start, end, num) -> List[float]:
+def linspace(start, end, num) -> List[int]:
+    """Linear spaced points within a division. Like numpy.linspace"""
     delta = (end - start) / (num - 1)
-    return [start + i*delta for i in range(num)]
+    return [int(start + i*delta) for i in range(num)]
 
 
 if __name__ == '__main__':
