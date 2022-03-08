@@ -1,0 +1,99 @@
+{
+  "directed": false,
+  "multigraph": false,
+  "graph": {},
+  "nodes": [
+    {
+      "type": "major",
+      "id": "clusters"
+    },
+    {
+      "type": "minor",
+      "aliases": [
+        "alaska"
+      ],
+      "id": "alaska"
+    },
+    {
+      "type": "minor",
+      "aliases": [
+        "csd3"
+      ],
+      "id": "csd3"
+    },
+    {
+      "type": "major",
+      "id": "apps"
+    },
+    {
+      "type": "minor",
+      "aliases": [
+        "gromacs"
+      ],
+      "id": "gromacs"
+    },
+    {
+      "type": "minor",
+      "aliases": [
+        "imb"
+      ],
+      "id": "imb"
+    },
+    {
+      "type": "major",
+      "id": "compilers"
+    },
+    {
+      "type": "minor",
+      "aliases": [
+        "gcc9"
+      ],
+      "id": "gcc9"
+    },
+    {
+      "type": "major",
+      "id": "mpi"
+    },
+    {
+      "type": "minor",
+      "aliases": [
+        "impi"
+      ],
+      "id": "impi"
+    },
+    {
+      "type": "minor",
+      "aliases": [
+        "openmpi",
+        "omp"
+      ],
+      "id": "ompi"
+    }
+  ],
+  "links": [
+    {
+      "source": "alaska",
+      "target": "gcc9"
+    },
+    {
+      "source": "alaska",
+      "target": "impi"
+    },
+    {
+      "source": "alaska",
+      "target": "ompi"
+    },
+    {
+      "source": "csd3",
+      "target": "gcc9"
+    },
+    {
+      "source": "csd3",
+      "target": "impi"
+    },
+    {
+      "source": "csd3",
+      "target": "ompi"
+    }
+  ]
+}
