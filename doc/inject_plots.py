@@ -21,9 +21,6 @@ plots = {
     0: ('bar', 'max_bandwidth', ('*/*openmpi*/imb/*PingPong*/*.log',
                                  '*/*omp*/imb/*PingPong*/*.log')),
 
-    1: ('bar', 'Gflops', ('*/*openmpi*/hpl/Hpl_single/*.log',
-                          '*/*omp*/hpl/Hpl_single/*.log')),
-
     3: ('time_series_regression', '*', '*')
 }
 
@@ -314,6 +311,7 @@ class Plot(ABC):
 
         for axis in (plot.xaxis, plot.yaxis):
             axis.axis_label_text_font_size = '14px'
+            axis.major_label_text_font_size = '12px'
 
         return None
 
@@ -624,6 +622,8 @@ class TimeSeriesRegressionPlot(Plot):
 
         plot.legend.location = "top_left"
         plot.yaxis.axis_label = 'Relative metric'
+
+
 
         self._set_x_ticks(plot)
         self._set_default_style(plot)
