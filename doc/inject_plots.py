@@ -1,4 +1,5 @@
 import os
+import shutil
 import numpy as np
 
 from typing import Dict, Tuple, List, Union, Sequence, Iterator
@@ -73,29 +74,28 @@ def inject_all(plots_dict:        Dict[int, Tuple],
 class File:
 
     @staticmethod
-    def _check_exists(filename):
+    def _validated(filename) -> str:
 
         if not os.path.exists(filename):
             raise IOError(f'Cannot create a file from {filename} - it did '
                           f'not exist')
 
+        return filename
+
 
 class HTMLFile(File):
 
-    def __init__(self, filename):
+    def __init__(self, template_filename):
 
-        self._check_exists(filename)
-        self._template_filename = filename
+        self._filename = self._validated(template_filename)
+        self._filename = self._filename.replace('_templates/', '')
 
-    @property
-    def _filename(self) -> str:
-        """Filename is just the template without the _templates/ directory"""
-        return ''.join(self._template_filename.split('/')[1:])
+        if template_filename != self._filename:
+            shutil.copy(template_filename, self._filename)
 
     @property
     def _current_file_lines(self) -> List[str]:
-        fn = self._filename if os.path.exists(self._filename) else self._template_filename
-        return open(fn, 'r').readlines()
+        return open(self._filename, 'r').readlines()
 
     def add_before_end_body(self, string: str):
         """Add a string before the end of the body """
@@ -132,7 +132,7 @@ class HTMLFile(File):
 
         if not found_idx:
             raise RuntimeError(f"Replacement failed: failed to find {idx} in "
-                               f"{self._template_filename}.")
+                               f"{self._filename}.")
 
         return None
 
@@ -155,8 +155,7 @@ class ReFrameLogFile(File):
 
     def __init__(self, filename, metric=None):
 
-        self._check_exists(filename)
-        self.filename = filename
+        self.filename = self._validated(filename)
 
         self.values:       List[float] = []
         self.dates:        List[date] = []
