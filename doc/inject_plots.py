@@ -18,8 +18,7 @@ from scipy.interpolate import interp1d
 
 plots = {
     # Bar plot for all clusters using openmpi builds, imb benchmark, PingPong
-    0: ('bar', 'max_bandwidth', ('*/*openmpi*/imb/*PingPong*/*.log',
-                                 '*/*omp*/imb/*PingPong*/*.log')),
+    # 0: ('bar', 'max_bandwidth', ('*/*openmpi*/imb/*PingPong*/*.log', '*/*omp*/imb/*PingPong*/*.log')),
 
     3: ('time_series_regression', '*', '*')
 }
@@ -308,6 +307,8 @@ class Plot(ABC):
 
         plot.background_fill_color = "#f5f5f5"
         plot.grid.grid_line_color = "white"
+
+        plot.background_fill_alpha = 0
 
         for axis in (plot.xaxis, plot.yaxis):
             axis.axis_label_text_font_size = '14px'
