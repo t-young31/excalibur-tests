@@ -457,8 +457,6 @@ class TimeSeriesRegressionPlot(Plot):
 
     _cache_filename = '.regression_plot.txt'
 
-    _block_size = 50
-
     def __init__(self, metric='*', paths='*'):
         super().__init__()
 
@@ -557,40 +555,30 @@ class TimeSeriesRegressionPlot(Plot):
 
         return np.linspace(min(dates), max(dates), num=500, dtype=float)
 
-    def smoothed(self, cluster_name) -> Tuple[np.ndarray, np.ndarray]:
+    def smoothed(self, cluster_name, n=12) -> Tuple[np.ndarray, np.ndarray]:
         """Smooth the relative metrics data by block averaging and splining"""
         all_dates = self.dates(cluster_name)
+        all_rel_metrics = self.relative_metrics(cluster_name)
 
-        dates = block_average(all_dates, block_size=self._block_size)
+        bins = np.linspace(min(all_dates), max(all_dates), num=n+1, dtype=float)
 
-        rel_metrics = block_average(self.relative_metrics(cluster_name),
-                                    block_size=self._block_size)
+        dates = [[] for _ in range(n)]
+        rel_metrics = [[] for _ in range(n)]
 
-        nd_dates = []           # nd == Non-duplicate
-        nd_rel_metrics = []
+        for _date, _metric in zip(all_dates, all_rel_metrics):
 
-        i = 1
-        while i < len(dates):
+            for i in range(1, len(bins)):
 
-            _rel_metrics = []
-            while abs(dates[i-1] - dates[i]) < 1E-8:
-                _rel_metrics.append(rel_metrics[i-i])
-                i += 1
-
-                if i == len(dates):
+                if bins[i-1] < _date <= bins[i]:
+                    rel_metrics[i-1].append(_metric)
+                    dates[i-1].append(_date)
                     break
 
-            if len(_rel_metrics) > 0:
-                nd_rel_metrics.append(sum(_rel_metrics)/len(_rel_metrics))
+        avg_dates = [sum(b) / len(b) for b in dates if len(b) > 0]
+        avg_rel_metrics = [sum(b) / len(b) for b in rel_metrics if len(b) > 0]
 
-            else:
-                nd_rel_metrics.append(rel_metrics[i-1])
-
-            nd_dates.append(dates[i-1])
-            i += 1
-
-        spline = interp1d(nd_dates, nd_rel_metrics, kind='cubic')
-        more_dates = np.linspace(min(nd_dates), max(nd_dates), num=200)
+        spline = interp1d(avg_dates, avg_rel_metrics, kind='nearest')
+        more_dates = np.linspace(min(avg_dates), max(avg_dates), num=200)
 
         return more_dates, spline(more_dates)
 
