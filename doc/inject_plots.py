@@ -8,7 +8,7 @@ from glob import glob
 from pathlib import Path
 
 from bokeh.plotting import figure
-from bokeh.models import HoverTool, ColumnDataSource, Range1d
+from bokeh.models import HoverTool, ColumnDataSource, Range1d, Band
 from bokeh.palettes import Dark2_6
 from bokeh.embed import components
 from bokeh.io import curdoc
@@ -457,7 +457,7 @@ class TimeSeriesRegressionPlot(Plot):
 
     _cache_filename = '.regression_plot.txt'
 
-    _block_size = 70
+    _block_size = 50
 
     def __init__(self, metric='*', paths='*'):
         super().__init__()
@@ -542,27 +542,6 @@ class TimeSeriesRegressionPlot(Plot):
         """All the dates present in the data, sorted old->new"""
         return [x for x in sorted(self.data[cluster_name]['x'])]
 
-    def smoothed_dates(self, cluster_name) -> np.ndarray:
-        """Set of dates that correspond to a set of smoothed values"""
-        dates = self.dates(cluster_name)
-
-        return np.linspace(min(dates), max(dates), num=500, dtype=float)
-
-    def smoothed_relative_metrics(self, cluster_name) -> List[float]:
-        """Smooth the relative metrics data by block averaging and splining"""
-
-        all_dates = self.dates(cluster_name)
-
-        dates = np.linspace(min(all_dates), max(all_dates),
-                            num=len(all_dates)//self._block_size)
-
-        rel_metrics = block_average(self.relative_metrics(cluster_name),
-                                    block_size=self._block_size)
-
-        spline = interp1d(dates, rel_metrics, kind='cubic')
-
-        return spline(self.smoothed_dates(cluster_name))
-
     def relative_metrics(self, cluster_name) -> List[float]:
         """Relative performance metrics for a particular cluster sorted by
         the date which they were evaluated"""
@@ -571,6 +550,54 @@ class TimeSeriesRegressionPlot(Plot):
         rel_metrics = self.data[cluster_name]['y']
 
         return [y for _, y in sorted(zip(dates, rel_metrics))]
+
+    def smoothed_dates(self, cluster_name) -> np.ndarray:
+        """Set of dates that correspond to a set of smoothed values"""
+        dates = self.dates(cluster_name)
+
+        return np.linspace(min(dates), max(dates), num=500, dtype=float)
+
+    def smoothed(self, cluster_name) -> Tuple[np.ndarray, np.ndarray]:
+        """Smooth the relative metrics data by block averaging and splining"""
+        all_dates = self.dates(cluster_name)
+
+        dates = block_average(all_dates, block_size=self._block_size)
+
+        rel_metrics = block_average(self.relative_metrics(cluster_name),
+                                    block_size=self._block_size)
+
+        nd_dates = []           # nd == Non-duplicate
+        nd_rel_metrics = []
+
+        i = 1
+        while i < len(dates):
+
+            _rel_metrics = []
+            while abs(dates[i-1] - dates[i]) < 1E-8:
+                _rel_metrics.append(rel_metrics[i-i])
+                i += 1
+
+                if i == len(dates):
+                    break
+
+            if len(_rel_metrics) > 0:
+                nd_rel_metrics.append(sum(_rel_metrics)/len(_rel_metrics))
+
+            else:
+                nd_rel_metrics.append(rel_metrics[i-1])
+
+            nd_dates.append(dates[i-1])
+            i += 1
+
+        spline = interp1d(nd_dates, nd_rel_metrics, kind='cubic')
+        more_dates = np.linspace(min(nd_dates), max(nd_dates), num=200)
+
+        return more_dates, spline(more_dates)
+
+    def block_relative_metrics(self, cluster_name, func) -> List[float]:
+        """Apply a function over a block"""
+        rel_metrics = self.relative_metrics(cluster_name)
+        return [func(b) for b in blocked_array(rel_metrics, 10)]
 
     def bokeh_components(self) -> Tuple[str, str]:
 
@@ -581,15 +608,31 @@ class TimeSeriesRegressionPlot(Plot):
 
         for cluster_name in self.data.keys():
 
-            plot.line(self.smoothed_dates(cluster_name),
-                      self.smoothed_relative_metrics(cluster_name),
+            smooth_dates, smooth_rel_metrics = self.smoothed(cluster_name)
+            plot.line(smooth_dates,
+                      smooth_rel_metrics,
                       legend_label=cluster_name,
                       color=colors[cluster_name],
                       line_width=2
                       )
 
-            # TODO: Min, max
+            source = ColumnDataSource(
+                data={'x': block_average(self.dates(cluster_name), 10),
+                      'lower': self.block_relative_metrics(cluster_name, func=min),
+                      'upper': self.block_relative_metrics(cluster_name, func=max)}
+                                      )
 
+            band = Band(base='x',
+                        lower='lower',
+                        upper='upper',
+                        source=source,
+                        level='underlay',
+                        fill_alpha=0.1,
+                        line_width=0.5,
+                        line_color='black',
+                        fill_color=colors[cluster_name])
+
+            plot.add_layout(band)
 
         plot.legend.location = "top_left"
         plot.yaxis.axis_label = 'Relative metric'
@@ -633,21 +676,24 @@ def linspace(start, end, num) -> List[int]:
 
 
 def block_average(array, block_size) -> list:
-    """Block average an array, while keeping the same type"""
+    """Block average an array"""
+    return [sum(b) / len(b) for b in blocked_array(array, block_size)]
+
+
+def blocked_array(array, block_size) -> List[list]:
+    """Apply a function over a blocked array"""
 
     if len(array) == 0:
         raise ValueError(f'Cannot block average {array}. Had no items')
 
-    avg_array = []
+    block_array = []
 
     for i in range(len(array) // block_size):
         block = array[i*block_size:block_size * (i + 1)]
-        avg_array.append(sum(block) / block_size)
+        block_array.append(block)
 
-    if isinstance(array[0], int):
-        avg_array = [int(round(x)) for x in avg_array]
-
-    return avg_array
+    # Blocked array includes the end points
+    return [array[:1]] + block_array + [array[-1:]]
 
 
 if __name__ == '__main__':
