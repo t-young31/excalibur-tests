@@ -5,61 +5,61 @@
   "nodes": [
     {
       "type": "major",
-      "id": "clusters"
+      "id": 0
     },
     {
       "type": "minor",
       "aliases": [
         "alaska"
       ],
-      "id": "alaska"
+      "id": 1
     },
     {
       "type": "minor",
       "aliases": [
         "csd3"
       ],
-      "id": "csd3"
+      "id": 2
     },
     {
       "type": "major",
-      "id": "apps"
+      "id": 3
     },
     {
       "type": "minor",
       "aliases": [
         "gromacs"
       ],
-      "id": "gromacs"
+      "id": 4
     },
     {
       "type": "minor",
       "aliases": [
         "imb"
       ],
-      "id": "imb"
+      "id": 5
     },
     {
       "type": "major",
-      "id": "compilers"
+      "id": 6
     },
     {
       "type": "minor",
       "aliases": [
         "gcc9"
       ],
-      "id": "gcc9"
+      "id": 7
     },
     {
       "type": "major",
-      "id": "mpi"
+      "id": 8
     },
     {
       "type": "minor",
       "aliases": [
         "impi"
       ],
-      "id": "impi"
+      "id": 9
     },
     {
       "type": "minor",
@@ -67,33 +67,33 @@
         "openmpi",
         "omp"
       ],
-      "id": "ompi"
+      "id": 10
     }
   ],
   "links": [
     {
-      "source": "alaska",
-      "target": "gcc9"
+      "source": 1,
+      "target": 7
     },
     {
-      "source": "alaska",
-      "target": "impi"
+      "source": 1,
+      "target": 9
     },
     {
-      "source": "alaska",
-      "target": "ompi"
+      "source": 1,
+      "target": 10
     },
     {
-      "source": "csd3",
-      "target": "gcc9"
+      "source": 2,
+      "target": 7
     },
     {
-      "source": "csd3",
-      "target": "impi"
+      "source": 2,
+      "target": 9
     },
     {
-      "source": "csd3",
-      "target": "ompi"
+      "source": 2,
+      "target": 10
     }
   ]
 }

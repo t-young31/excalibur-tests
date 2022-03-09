@@ -45,7 +45,11 @@ class Network(nx.Graph):
     def save_json(self) -> None:
         """Save the json that's readable by D3"""
 
-        data = json_graph.node_link_data(self)
+        # JSON must have integer node names
+        data = json_graph.node_link_data(
+            nx.convert_node_labels_to_integers(self)
+        )
+
         with open('assets/network.json', 'w') as f:
             json.dump(data, f, indent=2)
 
