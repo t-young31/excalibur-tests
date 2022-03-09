@@ -37,8 +37,11 @@ class Network(nx.Graph):
         self._config = {k: [Name(v) for v in vs] for k, vs in config.items()}
 
     def build(self) -> None:
+        """Build the network by adding nodes, edges then attributes of those"""
+
         self._add_major_and_minor_nodes()
         self._add_connections()
+        self._add_attributes()
 
         return None
 
@@ -55,15 +58,28 @@ class Network(nx.Graph):
 
         return None
 
+    def _add_attributes(self) -> None:
+        """Add the required attribute"""
+
+        for node in self.nodes:
+            self.nodes[node]['degree'] = len(list(self.neighbors(node)))
+
+        for ix, katz in nx.katz_centrality(self).items():
+            self.nodes[ix]['katz'] = katz
+
+        return None
+
     def _add_major_and_minor_nodes(self) -> None:
         """Add nodes based on the global config"""
 
         for major_node, sub_nodes in self._config.items():
             self.add_node(major_node,
-                          type='major')
+                          type='major',
+                          name=str(major_node))
 
             for minor_node in sub_nodes:
                 self.add_node(minor_node.name,
+                              name=str(minor_node),
                               type='minor',
                               aliases=minor_node.aliases)
 
@@ -71,6 +87,24 @@ class Network(nx.Graph):
 
     def _add_connections(self) -> None:
         """Add connections between nodes depending if a link exists"""
+
+        self._add_major_to_minor_connections()
+        self._add_cluster_connections()
+
+        # TODO: Other connections
+        return None
+
+    def _add_major_to_minor_connections(self) -> None:
+        """Add connections for minor nodes from major categories"""
+
+        for major_node, sub_nodes in self._config.items():
+            for minor_node in sub_nodes:
+                self.add_edge(str(major_node), str(minor_node))
+
+        return None
+
+    def _add_cluster_connections(self) -> None:
+        """Add connections between specific cluster and compilers/mpi """
 
         for cluster_name in self._config['clusters']:
 
@@ -95,18 +129,6 @@ class Network(nx.Graph):
 
             for mpi in self._config['mpi']:
                 add_edge(mpi)
-
-        # TODO: Other connections
-        return None
-
-    def _add_attributes(self) -> None:
-        """Add the required attribute"""
-
-        for node in self.nodes:
-            node['degree'] = self.neighbors(node)
-
-        for ix, katz in nx.katz_centrality(self).items():
-            self.nodes[ix]['katz'] = katz
 
         return None
 

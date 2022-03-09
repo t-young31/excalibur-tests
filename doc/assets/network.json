@@ -5,72 +5,113 @@
   "nodes": [
     {
       "type": "major",
+      "name": "clusters",
+      "degree": 2,
+      "katz": 0.2951145961188295,
       "id": 0
     },
     {
+      "name": "alaska",
       "type": "minor",
       "aliases": [
         "alaska"
       ],
+      "degree": 4,
+      "katz": 0.3512694731758985,
       "id": 1
     },
     {
+      "name": "csd3",
       "type": "minor",
       "aliases": [
         "csd3"
       ],
+      "degree": 4,
+      "katz": 0.3512694731758985,
       "id": 2
     },
     {
       "type": "major",
+      "name": "apps",
+      "degree": 2,
+      "katz": 0.27533967746221194,
       "id": 3
     },
     {
+      "name": "gromacs",
       "type": "minor",
       "aliases": [
         "gromacs"
       ],
+      "degree": 1,
+      "katz": 0.2523947043415602,
       "id": 4
     },
     {
+      "name": "imb",
       "type": "minor",
       "aliases": [
         "imb"
       ],
+      "degree": 1,
+      "katz": 0.2523947043415602,
       "id": 5
     },
     {
       "type": "major",
+      "name": "compilers",
+      "degree": 1,
+      "katz": 0.25694159764575153,
       "id": 6
     },
     {
+      "name": "gcc9",
       "type": "minor",
       "aliases": [
         "gcc9"
       ],
+      "degree": 3,
+      "katz": 0.32080875166877243,
       "id": 7
     },
     {
       "type": "major",
+      "name": "mpi",
+      "degree": 2,
+      "katz": 0.28967716511997055,
       "id": 8
     },
     {
+      "name": "impi",
       "type": "minor",
       "aliases": [
         "impi"
       ],
+      "degree": 3,
+      "katz": 0.3240823030518491,
       "id": 9
     },
     {
+      "name": "ompi",
       "type": "minor",
       "aliases": [
         "openmpi",
         "omp"
       ],
+      "degree": 3,
+      "katz": 0.3240823030518491,
       "id": 10
     }
   ],
   "links": [
+    {
+      "source": 0,
+      "target": 1
+    },
+    {
+      "source": 0,
+      "target": 2
+    },
     {
       "source": 1,
       "target": 7
@@ -93,6 +134,26 @@
     },
     {
       "source": 2,
+      "target": 10
+    },
+    {
+      "source": 3,
+      "target": 4
+    },
+    {
+      "source": 3,
+      "target": 5
+    },
+    {
+      "source": 6,
+      "target": 7
+    },
+    {
+      "source": 8,
+      "target": 9
+    },
+    {
+      "source": 8,
       "target": 10
     }
   ]
