@@ -4,11 +4,17 @@
   "graph": {},
   "nodes": [
     {
+      "name": "timeseries",
+      "degree": 0,
+      "katz": 0.2193828694233286,
+      "id": 0
+    },
+    {
       "type": "major",
       "name": "clusters",
       "degree": 2,
-      "katz": 0.2951145961188295,
-      "id": 0
+      "katz": 0.2879252638105215,
+      "id": 1
     },
     {
       "name": "alaska",
@@ -17,8 +23,8 @@
         "alaska"
       ],
       "degree": 4,
-      "katz": 0.3512694731758985,
-      "id": 1
+      "katz": 0.3427121432246245,
+      "id": 2
     },
     {
       "name": "csd3",
@@ -27,15 +33,15 @@
         "csd3"
       ],
       "degree": 4,
-      "katz": 0.3512694731758985,
-      "id": 2
+      "katz": 0.3427121432246245,
+      "id": 3
     },
     {
       "type": "major",
       "name": "apps",
       "degree": 2,
-      "katz": 0.27533967746221194,
-      "id": 3
+      "katz": 0.2686320850050055,
+      "id": 4
     },
     {
       "name": "gromacs",
@@ -44,8 +50,8 @@
         "gromacs"
       ],
       "degree": 1,
-      "katz": 0.2523947043415602,
-      "id": 4
+      "katz": 0.24624607792242512,
+      "id": 5
     },
     {
       "name": "imb",
@@ -54,15 +60,15 @@
         "imb"
       ],
       "degree": 1,
-      "katz": 0.2523947043415602,
-      "id": 5
+      "katz": 0.24624607792242512,
+      "id": 6
     },
     {
       "type": "major",
       "name": "compilers",
       "degree": 1,
-      "katz": 0.25694159764575153,
-      "id": 6
+      "katz": 0.25068220365576716,
+      "id": 7
     },
     {
       "name": "gcc9",
@@ -71,15 +77,15 @@
         "gcc9"
       ],
       "degree": 3,
-      "katz": 0.32080875166877243,
-      "id": 7
+      "katz": 0.3129934800641393,
+      "id": 8
     },
     {
       "type": "major",
       "name": "mpi",
       "degree": 2,
-      "katz": 0.28967716511997055,
-      "id": 8
+      "katz": 0.28262029490899154,
+      "id": 9
     },
     {
       "name": "impi",
@@ -88,8 +94,8 @@
         "impi"
       ],
       "degree": 3,
-      "katz": 0.3240823030518491,
-      "id": 9
+      "katz": 0.3161872839557982,
+      "id": 10
     },
     {
       "name": "ompi",
@@ -99,45 +105,25 @@
         "omp"
       ],
       "degree": 3,
-      "katz": 0.3240823030518491,
-      "id": 10
+      "katz": 0.3161872839557982,
+      "id": 11
     }
   ],
   "links": [
     {
       "type": "major",
-      "source": 0,
-      "target": 1
-    },
-    {
-      "type": "major",
-      "source": 0,
+      "source": 1,
       "target": 2
     },
     {
-      "type": "minor",
+      "type": "major",
       "source": 1,
-      "target": 7
-    },
-    {
-      "type": "minor",
-      "source": 1,
-      "target": 9
-    },
-    {
-      "type": "minor",
-      "source": 1,
-      "target": 10
+      "target": 3
     },
     {
       "type": "minor",
       "source": 2,
-      "target": 7
-    },
-    {
-      "type": "minor",
-      "source": 2,
-      "target": 9
+      "target": 8
     },
     {
       "type": "minor",
@@ -145,29 +131,49 @@
       "target": 10
     },
     {
-      "type": "major",
+      "type": "minor",
+      "source": 2,
+      "target": 11
+    },
+    {
+      "type": "minor",
       "source": 3,
-      "target": 4
+      "target": 8
+    },
+    {
+      "type": "minor",
+      "source": 3,
+      "target": 10
+    },
+    {
+      "type": "minor",
+      "source": 3,
+      "target": 11
     },
     {
       "type": "major",
-      "source": 3,
+      "source": 4,
       "target": 5
     },
     {
       "type": "major",
-      "source": 6,
-      "target": 7
+      "source": 4,
+      "target": 6
     },
     {
       "type": "major",
-      "source": 8,
-      "target": 9
+      "source": 7,
+      "target": 8
     },
     {
       "type": "major",
-      "source": 8,
+      "source": 9,
       "target": 10
+    },
+    {
+      "type": "major",
+      "source": 9,
+      "target": 11
     }
   ]
 }

@@ -2,7 +2,7 @@ const width = 400, height = 400;
 const color = d3.scale.category20();
 
 let force = d3.layout.force()
-    .charge(-250)
+    .charge(-200)
     .linkDistance(function (d) {
         if (d.type === "major"){
             return 50;
@@ -50,6 +50,8 @@ d3.json("assets/network.json", function(error, graph) {
                 .style("left", d3.select(this).attr("cx") + "px")
                 .style("top", d3.select(this).attr("cy") + "px")
                 .style("opacity", 1);
+
+            if (n.name === "timeseries"){ show_time_series();}
         })
         .on("mouseout", function (n){
             tooltip.style("opacity", 0);
@@ -72,3 +74,12 @@ let tooltip = d3.select("#d3-network-container")
     .append("div")
     .attr("class", "tooltip")
     .style("position", "absolute");
+
+function show_time_series(){
+
+    let element = document.getElementById("timeseries-div");
+
+    // Create a collapse instance, toggles the collapse element on invocation
+    let collapsable = new bootstrap.Collapse(element);
+    collapsable.show();
+}

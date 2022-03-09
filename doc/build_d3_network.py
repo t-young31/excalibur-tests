@@ -39,6 +39,7 @@ class Network(nx.Graph):
     def build(self) -> None:
         """Build the network by adding nodes, edges then attributes of those"""
 
+        self._add_time_series_node()
         self._add_major_and_minor_nodes()
         self._add_connections()
         self._add_attributes()
@@ -61,6 +62,10 @@ class Network(nx.Graph):
     @property
     def _major_nodes(self) -> List[str]:
         return list(self._config.keys())
+
+    def _add_time_series_node(self) -> None:
+        """Add a single node of the time series regression plot"""
+        self.add_node('timeseries', name='timeseries')
 
     def _add_attributes(self) -> None:
         """Add the required attribute"""
