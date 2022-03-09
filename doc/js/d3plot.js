@@ -1,9 +1,14 @@
 const width = 400, height = 400;
-const color = d3.scale.category10();
+const color = d3.scale.category20();
 
 let force = d3.layout.force()
-    .charge(-120)
-    .linkDistance(70)
+    .charge(-250)
+    .linkDistance(function (d) {
+        if (d.type === "major"){
+            return 50;
+        }
+        return 150;
+    })
     .size([width, height]);
 
 let svg = d3.select("#d3-network-container").select("svg");
@@ -32,13 +37,13 @@ d3.json("assets/network.json", function(error, graph) {
         .attr("class", "node")
         .attr("r", function (n) {     // Radius
             if (n.type === "major"){
-                return 15;
+                return 16;
             }
             return 10;
         })               // radius
         .style("fill", function (n) {
             // We colour the node depending on the degree.
-            return color(n.degree);
+            return color(n.degree/10);
         })
         .call(force.drag);
 

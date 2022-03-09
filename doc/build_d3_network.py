@@ -3,7 +3,7 @@ import json
 import networkx as nx
 from networkx.readwrite import json_graph
 
-from typing import Tuple, Union
+from typing import Tuple, Union, List
 
 
 config = {
@@ -58,6 +58,10 @@ class Network(nx.Graph):
 
         return None
 
+    @property
+    def _major_nodes(self) -> List[str]:
+        return list(self._config.keys())
+
     def _add_attributes(self) -> None:
         """Add the required attribute"""
 
@@ -66,6 +70,12 @@ class Network(nx.Graph):
 
         for ix, katz in nx.katz_centrality(self).items():
             self.nodes[ix]['katz'] = katz
+
+        for (u, v) in self.edges:
+            if u in self._major_nodes or v in self._major_nodes:
+                self.edges[u, v]['type'] = 'major'
+            else:
+                self.edges[u, v]['type'] = 'minor'
 
         return None
 
