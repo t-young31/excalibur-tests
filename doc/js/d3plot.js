@@ -45,11 +45,16 @@ d3.json("assets/network.json", function(error, graph) {
             // We colour the node depending on the degree.
             return color(n.degree/10);
         })
+        .on("mouseover", function (n){
+            tooltip.html(n.name)
+                .style("left", d3.select(this).attr("cx") + "px")
+                .style("top", d3.select(this).attr("cy") + "px")
+                .style("opacity", 1);
+        })
+        .on("mouseout", function (n){
+            tooltip.style("opacity", 0);
+        })
         .call(force.drag);
-
-    // The label each node its name from the networkx graph.
-    node.append("title")
-        .text(function(d) { return d.name; });
 
     force.on("tick", function() {
         link.attr("x1", function(d) { return d.source.x; })
@@ -61,3 +66,9 @@ d3.json("assets/network.json", function(error, graph) {
             .attr("cy", function(d) { return d.y; });
     });
 });
+
+// create a tooltip
+let tooltip = d3.select("#d3-network-container")
+    .append("div")
+    .attr("class", "tooltip")
+    .style("position", "absolute");
