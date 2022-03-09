@@ -590,7 +590,8 @@ class TimeSeriesRegressionPlot(Plot):
         plot = figure(title='Time series regression',
                       width=800,
                       height=400,
-                      y_range=(0.6, 4))
+                      y_range=(0.6, 4),
+                      max_width=900)
 
         for cluster_name in self.data.keys():
 
