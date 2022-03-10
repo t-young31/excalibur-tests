@@ -1,5 +1,4 @@
 const width = 600, height = 400;
-// const color = d3.scale.category20();
 
 let force = d3.layout.force()
     .charge(-200)
@@ -9,7 +8,13 @@ let force = d3.layout.force()
     })
     .size([width, height]);
 
+let tooltip = d3.select("#d3-network-container")
+    .append("div")
+    .attr("class", "tooltip")
+    .style("position", "relative");
+
 let svg = d3.select("#d3-network-container").select("svg");
+
 if (svg.empty()) {
     svg = d3.select("#d3-network-container").append("svg")
                 .attr("width", width)
@@ -17,20 +22,32 @@ if (svg.empty()) {
                 .attr("preserveAspectRatio", "xMidYMid meet");
 }
 
-d3.json("assets/network.json", function(error, graph) {
+d3.json("assets/network.json", function(error, network) {
 
-    force.nodes(graph.nodes)
-        .links(graph.links)
+    force.nodes(network.nodes)
+        .links(network.links)
         .start();
 
-    let link = svg.selectAll(".link")  // Create edges
-        .data(graph.links)
+    let links = create_links(network);
+    let nodes = create_nodes(network);
+    force.on("tick", function() { update_network_position(links, nodes);});
+});
+
+function create_links(network){
+    // Create edges in the network
+
+    return svg.selectAll(".link")
+        .data(network.links)
         .enter().append("line")
         .attr("class", "link")
         .attr("stroke-width", 2);
+}
 
-    let node = svg.selectAll(".node")  // Create nodes
-        .data(graph.nodes)
+function create_nodes(network){
+    // Create nodes in the graph
+
+    return svg.selectAll(".node")
+        .data(network.nodes)
         .enter().append("circle")
         .attr("class", "node")
         .attr("r", function (d) {     // Radius
@@ -47,35 +64,23 @@ d3.json("assets/network.json", function(error, graph) {
             return d3.rgb(n.color);
         })
         .on("mouseover", function (n){
-            tooltip.html(n.name)
-                .style("left", document.getElementById("d3-network-container").offsetWidth/2 + "px")
-                .style("top", 10 + "px")
-                .style("opacity", 1);
-
+            show_tooltip(n);
             if (n.name === "timeseries"){ show_time_series();}
         })
-        .on("mouseout", function (n){
-            tooltip.style("opacity", 0);
-        })
+        .on("mouseout", function (){ tooltip.style("opacity", 0);}
+        )
         .call(force.drag);
+}
 
-    force.on("tick", function() {
-        link.attr("x1", function(d) { return d.source.x; })
-            .attr("y1", function(d) { return d.source.y; })
-            .attr("x2", function(d) { return d.target.x; })
-            .attr("y2", function(d) { return d.target.y; });
+function show_tooltip(n){
+    // Show the tooltip aka. node label annotation
 
-        node.attr("cx", function(d) { return d.x; })
-            .attr("cy", function(d) { return d.y; });
-    });
-});
-
-
-let tooltip = d3.select("#d3-network-container")
-    .append("div")
-    .attr("class", "tooltip")
-    .style("position", "relative");
-
+    let w = document.getElementById("d3-network-container").offsetWidth;
+    tooltip.html(n.name)
+                .style("left", w/2 + "px")
+                .style("top", 10 + "px")
+                .style("opacity", 1);
+}
 
 function show_time_series(){
 
@@ -85,3 +90,14 @@ function show_time_series(){
     let collapsable = new bootstrap.Collapse(element);
     collapsable.show();
 }
+
+function update_network_position(links, nodes){
+    links.attr("x1", function(d) { return d.source.x; })
+         .attr("y1", function(d) { return d.source.y; })
+         .attr("x2", function(d) { return d.target.x; })
+         .attr("y2", function(d) { return d.target.y; });
+
+    nodes.attr("cx", function(d) { return d.x; })
+        .attr("cy", function(d) { return d.y; });
+}
+
