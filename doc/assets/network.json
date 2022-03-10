@@ -1,0 +1,179 @@
+{
+  "directed": false,
+  "multigraph": false,
+  "graph": {},
+  "nodes": [
+    {
+      "name": "timeseries",
+      "degree": 0,
+      "katz": 0.2193828694233286,
+      "id": 0
+    },
+    {
+      "type": "major",
+      "name": "clusters",
+      "degree": 2,
+      "katz": 0.2879252638105215,
+      "id": 1
+    },
+    {
+      "name": "alaska",
+      "type": "minor",
+      "aliases": [
+        "alaska"
+      ],
+      "degree": 4,
+      "katz": 0.3427121432246245,
+      "id": 2
+    },
+    {
+      "name": "csd3",
+      "type": "minor",
+      "aliases": [
+        "csd3"
+      ],
+      "degree": 4,
+      "katz": 0.3427121432246245,
+      "id": 3
+    },
+    {
+      "type": "major",
+      "name": "apps",
+      "degree": 2,
+      "katz": 0.2686320850050055,
+      "id": 4
+    },
+    {
+      "name": "gromacs",
+      "type": "minor",
+      "aliases": [
+        "gromacs"
+      ],
+      "degree": 1,
+      "katz": 0.24624607792242512,
+      "id": 5
+    },
+    {
+      "name": "imb",
+      "type": "minor",
+      "aliases": [
+        "imb"
+      ],
+      "degree": 1,
+      "katz": 0.24624607792242512,
+      "id": 6
+    },
+    {
+      "type": "major",
+      "name": "compilers",
+      "degree": 1,
+      "katz": 0.25068220365576716,
+      "id": 7
+    },
+    {
+      "name": "gcc9",
+      "type": "minor",
+      "aliases": [
+        "gcc9"
+      ],
+      "degree": 3,
+      "katz": 0.3129934800641393,
+      "id": 8
+    },
+    {
+      "type": "major",
+      "name": "mpi",
+      "degree": 2,
+      "katz": 0.28262029490899154,
+      "id": 9
+    },
+    {
+      "name": "impi",
+      "type": "minor",
+      "aliases": [
+        "impi"
+      ],
+      "degree": 3,
+      "katz": 0.3161872839557982,
+      "id": 10
+    },
+    {
+      "name": "ompi",
+      "type": "minor",
+      "aliases": [
+        "openmpi",
+        "omp"
+      ],
+      "degree": 3,
+      "katz": 0.3161872839557982,
+      "id": 11
+    }
+  ],
+  "links": [
+    {
+      "type": "major",
+      "source": 1,
+      "target": 2
+    },
+    {
+      "type": "major",
+      "source": 1,
+      "target": 3
+    },
+    {
+      "type": "minor",
+      "source": 2,
+      "target": 8
+    },
+    {
+      "type": "minor",
+      "source": 2,
+      "target": 10
+    },
+    {
+      "type": "minor",
+      "source": 2,
+      "target": 11
+    },
+    {
+      "type": "minor",
+      "source": 3,
+      "target": 8
+    },
+    {
+      "type": "minor",
+      "source": 3,
+      "target": 10
+    },
+    {
+      "type": "minor",
+      "source": 3,
+      "target": 11
+    },
+    {
+      "type": "major",
+      "source": 4,
+      "target": 5
+    },
+    {
+      "type": "major",
+      "source": 4,
+      "target": 6
+    },
+    {
+      "type": "major",
+      "source": 7,
+      "target": 8
+    },
+    {
+      "type": "major",
+      "source": 9,
+      "target": 10
+    },
+    {
+      "type": "major",
+      "source": 9,
+      "target": 11
+    }
+  ]
+}
