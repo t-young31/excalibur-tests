@@ -1,3 +1,4 @@
 bokeh
 numpy
 scipy
+networkx
