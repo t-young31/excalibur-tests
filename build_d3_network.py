@@ -13,6 +13,11 @@ config = {
     'mpi':       ['impi', ('ompi', ('openmpi', 'omp'))]
 }
 
+# Default hex values for tab colors from
+# matplotlib: https://matplotlib.org/stable/gallery/color/named_colors.html
+colors = ('#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b',
+          '#e377c2', '#7f7f7f', '#bcbd22', '#17becf')
+
 
 class Name:
 
@@ -86,17 +91,24 @@ class Network(nx.Graph):
 
     def _add_major_and_minor_nodes(self) -> None:
         """Add nodes based on the global config"""
+        major_node_idx = 0
 
         for major_node, sub_nodes in self._config.items():
+
             self.add_node(major_node,
                           type='major',
-                          name=str(major_node))
+                          name=str(major_node),
+                          color=colors[major_node_idx])
 
             for minor_node in sub_nodes:
+
                 self.add_node(minor_node.name,
                               name=str(minor_node),
                               type='minor',
-                              aliases=minor_node.aliases)
+                              aliases=minor_node.aliases,
+                              color=colors[major_node_idx])
+
+            major_node_idx += 1
 
         return None
 

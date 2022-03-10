@@ -12,6 +12,7 @@
     {
       "type": "major",
       "name": "clusters",
+      "color": "#1f77b4",
       "degree": 2,
       "katz": 0.2879252638105215,
       "id": 1
@@ -22,6 +23,7 @@
       "aliases": [
         "alaska"
       ],
+      "color": "#1f77b4",
       "degree": 4,
       "katz": 0.3427121432246245,
       "id": 2
@@ -32,6 +34,7 @@
       "aliases": [
         "csd3"
       ],
+      "color": "#1f77b4",
       "degree": 4,
       "katz": 0.3427121432246245,
       "id": 3
@@ -39,6 +42,7 @@
     {
       "type": "major",
       "name": "apps",
+      "color": "#ff7f0e",
       "degree": 2,
       "katz": 0.2686320850050055,
       "id": 4
@@ -49,6 +53,7 @@
       "aliases": [
         "gromacs"
       ],
+      "color": "#ff7f0e",
       "degree": 1,
       "katz": 0.24624607792242512,
       "id": 5
@@ -59,6 +64,7 @@
       "aliases": [
         "imb"
       ],
+      "color": "#ff7f0e",
       "degree": 1,
       "katz": 0.24624607792242512,
       "id": 6
@@ -66,6 +72,7 @@
     {
       "type": "major",
       "name": "compilers",
+      "color": "#2ca02c",
       "degree": 1,
       "katz": 0.25068220365576716,
       "id": 7
@@ -76,6 +83,7 @@
       "aliases": [
         "gcc9"
       ],
+      "color": "#2ca02c",
       "degree": 3,
       "katz": 0.3129934800641393,
       "id": 8
@@ -83,6 +91,7 @@
     {
       "type": "major",
       "name": "mpi",
+      "color": "#d62728",
       "degree": 2,
       "katz": 0.28262029490899154,
       "id": 9
@@ -93,6 +102,7 @@
       "aliases": [
         "impi"
       ],
+      "color": "#d62728",
       "degree": 3,
       "katz": 0.3161872839557982,
       "id": 10
@@ -104,6 +114,7 @@
         "openmpi",
         "omp"
       ],
+      "color": "#d62728",
       "degree": 3,
       "katz": 0.3161872839557982,
       "id": 11

@@ -1,12 +1,10 @@
-const width = 400, height = 400;
-const color = d3.scale.category20();
+const width = 600, height = 400;
+// const color = d3.scale.category20();
 
 let force = d3.layout.force()
     .charge(-200)
     .linkDistance(function (d) {
-        if (d.type === "major"){
-            return 50;
-        }
+        if (d.type === "major"){ return 50; }
         return 150;
     })
     .size([width, height]);
@@ -35,20 +33,23 @@ d3.json("assets/network.json", function(error, graph) {
         .data(graph.nodes)
         .enter().append("circle")
         .attr("class", "node")
-        .attr("r", function (n) {     // Radius
-            if (n.type === "major"){
-                return 16;
-            }
+        .attr("r", function (d) {     // Radius
+            if (d.type === "major"){ return 16; }
+            if (d.name === "timeseries") { return 20; }
             return 10;
-        })               // radius
+        })
+        .style("opacity", function (d){
+            if (d.type === "minor"){ return 0.7; }
+            return 1.0;
+        })
         .style("fill", function (n) {
             // We colour the node depending on the degree.
-            return color(n.degree/10);
+            return d3.rgb(n.color);
         })
         .on("mouseover", function (n){
             tooltip.html(n.name)
-                .style("left", d3.select(this).attr("cx") + "px")
-                .style("top", d3.select(this).attr("cy") + "px")
+                .style("left", document.getElementById("d3-network-container").offsetWidth/2 + "px")
+                .style("top", 10 + "px")
                 .style("opacity", 1);
 
             if (n.name === "timeseries"){ show_time_series();}
@@ -69,11 +70,12 @@ d3.json("assets/network.json", function(error, graph) {
     });
 });
 
-// create a tooltip
+
 let tooltip = d3.select("#d3-network-container")
     .append("div")
     .attr("class", "tooltip")
-    .style("position", "absolute");
+    .style("position", "relative");
+
 
 function show_time_series(){
 
