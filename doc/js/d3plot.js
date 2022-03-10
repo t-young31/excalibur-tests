@@ -30,6 +30,7 @@ d3.json("assets/network.json", function(error, network) {
     network.link_dict = create_network_link_dict(network);
 
     nodes.on('click', function (d) {
+        d.selected = true;
         highlight_neighbours(d, nodes, links, network);
     });
 });
@@ -72,7 +73,9 @@ function create_nodes(network){
             show_tooltip(n);
             if (n.name === "timeseries"){ show_time_series();}
         })
-        .on("mouseout", function (){ tooltip.style("opacity", 0);})
+        .on("mouseout", function (d){
+            if (!d.selected){ tooltip.style("opacity", 0);}
+        })
         .call(force.drag);
 }
 
@@ -135,6 +138,7 @@ function highlight_neighbours(o, nodes, links, network){
 
         network.a_node_is_highlighted = true;
     } else {
+        o.selected = false;
         nodes.style("opacity", default_node_opacity);
         links.style("opacity", 1).style("stroke-width", 2);
         network.a_node_is_highlighted = false;
