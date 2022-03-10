@@ -20,6 +20,7 @@ outdated/
 .DS_Store
 doc/.*
 doc/*.html
+/doc/node_modules/
 
 # jupyter checkpoints:
 *-checkpoint.ipynb
