@@ -624,8 +624,6 @@ class TimeSeriesRegressionPlot(Plot):
         plot.legend.location = "top_left"
         plot.yaxis.axis_label = 'Relative metric'
 
-
-
         self._set_x_ticks(plot)
         self._set_default_style(plot)
 
