@@ -22,7 +22,8 @@ colors = ('#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b',
 # Long form descriptions of terms in config
 descriptions = {
     'alaska': '???',
-    'csd3': 'Cambridge Service for Data-Driven Discovery (<a href="https://www.hpc.cam.ac.uk/high-performance-computing">CSD3</a>)'
+    'csd3': 'Cambridge Service for Data-Driven Discovery (<a href="https://www.hpc.cam.ac.uk/high-performance-computing">CSD3</a>)',
+    'gromacs': 'A versatile package to perform molecular dynamics (<a href="https://www.gromacs.org/">GROMACS</a>).'
 }
 
 

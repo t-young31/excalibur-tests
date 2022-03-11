@@ -22,11 +22,12 @@ d3.json("assets/network.json", function(error, network) {
     // network parameter is built from the json...
     force.nodes(network.nodes).links(network.links).start();
 
+    network.a_node_is_highlighted = false;
+
     let links = create_links(network);
     let nodes = create_nodes(network);
     force.on("tick", function() { update_positions(nodes, links); });
 
-    network.a_node_is_highlighted = false;
     network.link_dict = create_network_link_dict(network);
 
     nodes.on('click', function (d) {
@@ -70,10 +71,12 @@ function create_nodes(network){
             return d3.rgb(n.color);
         })
         .on("mouseover", function (n){
+            if (network.a_node_is_highlighted) {return;}
             show_tooltip(n);
             if (n.name === "timeseries"){ show_time_series();}
         })
         .on("mouseout", function (d){
+            if (network.a_node_is_highlighted) {return;}
             if (!d.selected){ tooltip.style("opacity", 0);}
         })
         .call(force.drag);
@@ -97,7 +100,7 @@ function show_tooltip(n){
     console.log(tooltip)
 
     tooltip.html(html_str)
-                .style("left", (w-400)/2 + "px")
+                .style("left", (w-width)/2 + "px")
                 .style("top", 10 + "px")
                 .style("opacity", 1);
 }
