@@ -11628,7 +11628,11 @@ footer a:hover, footer a:active, footer a:focus {
     max-width: 17rem;
   }
 }
-.node {stroke: #fff; stroke-width: 2px;}
+.node {
+  stroke: #fff;
+  stroke-width: 2px;
+  cursor: pointer;
+}
 .link {stroke: #999; stroke-opacity: .6;}
 .bk-root .bk {
     margin: 0 auto !important;

@@ -21,6 +21,8 @@ plots = {
     # Bar plot for all clusters using openmpi builds, imb benchmark, PingPong
     # 0: ('bar', 'max_bandwidth', ('*/*openmpi*/imb/*PingPong*/*.log', '*/*omp*/imb/*PingPong*/*.log')),
 
+    0: ('line', 'performance', 'myriad/*/gromacs*/*/'),
+
     3: ('time_series_regression', '*', '*')
 }
 
