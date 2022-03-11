@@ -87,9 +87,17 @@ function default_node_opacity(node){
 function show_tooltip(n){
     // Show the tooltip aka. node label annotation
 
-    let w = document.getElementById("d3-network-container").offsetWidth;
-    tooltip.html(n.name)
-                .style("left", w/2 + "px")
+    let w = parseFloat(document
+        .getElementById("d3-network-container")
+        .offsetWidth);
+
+    let html_str = n.name
+    if (n.desc !== "none"){ html_str += n.desc; }
+
+    console.log(tooltip)
+
+    tooltip.html(html_str)
+                .style("left", (w-400)/2 + "px")
                 .style("top", 10 + "px")
                 .style("opacity", 1);
 }
