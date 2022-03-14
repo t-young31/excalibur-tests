@@ -22,16 +22,18 @@ d3.json("assets/network.json", function(error, network) {
     // network parameter is built from the json...
     force.nodes(network.nodes).links(network.links).start();
 
+    network.a_node_is_highlighted = false;
+
     let links = create_links(network);
     let nodes = create_nodes(network);
     force.on("tick", function() { update_positions(nodes, links); });
 
-    network.a_node_is_highlighted = false;
     network.link_dict = create_network_link_dict(network);
 
     nodes.on('click', function (d) {
-        d.selected = true;
+        d.selected = !d.selected;
         highlight_neighbours(d, nodes, links, network);
+        show_bootstrap_div(d.name+"-scaling");
     });
 });
 
@@ -70,10 +72,12 @@ function create_nodes(network){
             return d3.rgb(n.color);
         })
         .on("mouseover", function (n){
+            if (network.a_node_is_highlighted) {return;}
             show_tooltip(n);
             if (n.name === "timeseries"){ show_time_series();}
         })
         .on("mouseout", function (d){
+            if (network.a_node_is_highlighted) {return;}
             if (!d.selected){ tooltip.style("opacity", 0);}
         })
         .call(force.drag);
@@ -87,21 +91,32 @@ function default_node_opacity(node){
 function show_tooltip(n){
     // Show the tooltip aka. node label annotation
 
-    let w = document.getElementById("d3-network-container").offsetWidth;
-    tooltip.html(n.name)
-                .style("left", w/2 + "px")
+    let w = parseFloat(document
+        .getElementById("d3-network-container")
+        .offsetWidth);
+
+    let html_str = n.name
+    if (n.desc !== "none"){ html_str += n.desc; }
+
+    console.log(tooltip)
+
+    tooltip.html(html_str)
+                .style("left", (w-width)/2 + "px")
                 .style("top", 10 + "px")
                 .style("opacity", 1);
 }
 
-function show_time_series(){
+function show_bootstrap_div(div_name){
+    let element = document.getElementById(div_name);
 
-    let element = document.getElementById("timeseries-div");
+    if (element == null){console.log("Cannot get element", div_name)}
 
     // Create a collapse instance, toggles the collapse element on invocation
     let collapsable = new bootstrap.Collapse(element);
     collapsable.show();
 }
+
+function show_time_series(){ show_bootstrap_div("timeseries-div"); }
 
 function update_positions(nodes, links){
     links.attr("x1", function(d) { return d.source.x; })

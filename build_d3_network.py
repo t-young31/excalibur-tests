@@ -7,7 +7,7 @@ from typing import Tuple, Union, List
 
 
 config = {
-    'clusters': ['alaska', 'csd3'],
+    'clusters':  ['alaska', 'csd3'],
     'apps':      ['gromacs', 'imb'],
     'compilers': ['gcc9'],
     'mpi':       ['impi', ('ompi', ('openmpi', 'omp'))]
@@ -17,6 +17,14 @@ config = {
 # matplotlib: https://matplotlib.org/stable/gallery/color/named_colors.html
 colors = ('#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b',
           '#e377c2', '#7f7f7f', '#bcbd22', '#17becf')
+
+
+# Long form descriptions of terms in config
+descriptions = {
+    'alaska': '???',
+    'csd3': 'Cambridge Service for Data-Driven Discovery (<a href="https://www.hpc.cam.ac.uk/high-performance-computing">CSD3</a>)',
+    'gromacs': 'A versatile package to perform molecular dynamics (<a href="https://www.gromacs.org/">GROMACS</a>).'
+}
 
 
 class Name:
@@ -77,6 +85,11 @@ class Network(nx.Graph):
 
         for node in self.nodes:
             self.nodes[node]['degree'] = len(list(self.neighbors(node)))
+
+            if str(node) in descriptions:
+                self.nodes[node]['desc'] = f'<p class="tiny">{descriptions[str(node)]}</p>'
+            else:
+                self.nodes[node]['desc'] = 'none'
 
         for ix, katz in nx.katz_centrality(self).items():
             self.nodes[ix]['katz'] = katz
