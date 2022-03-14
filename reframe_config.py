@@ -134,6 +134,33 @@ site_configuration = {
                 },
             ]
         },  # end Tursa
+        {
+            'name': 'dial3',
+            'descr': 'DiaL3',
+            'hostnames': ['d3-login.*'],
+            'partitions': [
+                {
+                    'name': 'compute-node',
+                    'descr': 'Computing nodes',
+                    'scheduler': 'slurm',
+                    'launcher': 'mpirun',
+                    'environs': ['default'],
+                    'max_jobs': 16,
+                },
+                {
+                    'name': 'devel',
+                    'descr': 'Development partition nodes',
+                    'scheduler': 'slurm',
+                    'launcher': 'mpirun',
+                    'environs': ['default'],
+                    'max_jobs': 2,
+                    'processor': {'num_cpus': 128,
+                                  'num_cpus_per_core': 1,
+                                  'num_sockets': 2,
+                                  'num_cpus_per_socket': 64}
+                },
+            ]
+        },  # end DiaL3
         # < insert new systems here >
     ],
     'environments': [
