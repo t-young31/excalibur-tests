@@ -7,7 +7,7 @@ from typing import Tuple, Union, List
 
 
 config = {
-    'clusters':  ['alaska', 'csd3', 'cosma8'],
+    'clusters':  ['alaska', 'csd3'],
     'apps':      ['gromacs', 'imb'],
     'compilers': ['gcc9'],
     'mpi':       ['impi', ('ompi', ('openmpi', 'omp'))]

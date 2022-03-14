@@ -60,7 +60,7 @@
       ],
       "color": "#ff7f0e",
       "degree": 1,
-      "desc": "none",
+      "desc": "<p class=\"tiny\">A versatile package to perform molecular dynamics (<a href=\"https://www.gromacs.org/\">GROMACS</a>).</p>",
       "katz": 0.24624607792242512,
       "id": 5
     },

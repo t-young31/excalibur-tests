@@ -31,8 +31,9 @@ d3.json("assets/network.json", function(error, network) {
     network.link_dict = create_network_link_dict(network);
 
     nodes.on('click', function (d) {
-        d.selected = true;
+        d.selected = !d.selected;
         highlight_neighbours(d, nodes, links, network);
+        show_bootstrap_div(d.name+"-scaling");
     });
 });
 
@@ -105,14 +106,17 @@ function show_tooltip(n){
                 .style("opacity", 1);
 }
 
-function show_time_series(){
+function show_bootstrap_div(div_name){
+    let element = document.getElementById(div_name);
 
-    let element = document.getElementById("timeseries-div");
+    if (element == null){console.log("Cannot get element", div_name)}
 
     // Create a collapse instance, toggles the collapse element on invocation
     let collapsable = new bootstrap.Collapse(element);
     collapsable.show();
 }
+
+function show_time_series(){ show_bootstrap_div("timeseries-div"); }
 
 function update_positions(nodes, links){
     links.attr("x1", function(d) { return d.source.x; })
