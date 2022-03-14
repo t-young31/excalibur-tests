@@ -654,6 +654,9 @@ class TimeSeriesRegressionPlot(Plot):
 
         return more_dates, spline(more_dates)
 
+    def has_no_data(self, cluster_name) -> bool:
+        return len(self.data[cluster_name]['x']) == 0
+
     def block_relative_metrics(self, cluster_name, func) -> List[float]:
         """Apply a function over a block"""
         rel_metrics = self.relative_metrics(cluster_name)
@@ -668,6 +671,9 @@ class TimeSeriesRegressionPlot(Plot):
                       max_width=900)
 
         for cluster_name in self.data.keys():
+
+            if self.has_no_data(cluster_name):
+                continue
 
             smooth_dates, smooth_rel_metrics = self.smoothed(cluster_name)
             plot.line(smooth_dates,
@@ -709,7 +715,7 @@ class TimeSeriesRegressionPlot(Plot):
 
         min_x, max_x = 2 ** 99, 0
 
-        for xs in (xy['x'] for xy in self.data.values()):
+        for xs in (xy['x'] for xy in self.data.values() if len(xy['x']) > 0):
 
             if max(xs) > max_x:
                 max_x = max(xs)
