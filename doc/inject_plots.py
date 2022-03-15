@@ -555,6 +555,10 @@ class TimeSeriesRegressionPlot(Plot):
                 k, v = line.split(':')
                 xs, ys = v.split('|')
 
+                if len(xs) == 0 or len(ys) == 0:
+                    print(f'WARNING: Failed to find any data for {k}')
+                    continue
+
                 self.data[k] = {'x': [float(x) for x in xs.split(',')],
                                 'y': [float(y) for y in ys.split(',')]}
         return None

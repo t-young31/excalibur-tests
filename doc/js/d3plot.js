@@ -98,8 +98,6 @@ function show_tooltip(n){
     let html_str = n.name
     if (n.desc !== "none"){ html_str += n.desc; }
 
-    console.log(tooltip)
-
     tooltip.html(html_str)
                 .style("left", (w-width)/2 + "px")
                 .style("top", 10 + "px")
@@ -109,7 +107,7 @@ function show_tooltip(n){
 function show_bootstrap_div(div_name){
     let element = document.getElementById(div_name);
 
-    if (element == null){console.log("Cannot get element", div_name)}
+    if (element == null){ return console.log("Cannot get element", div_name)}
 
     // Create a collapse instance, toggles the collapse element on invocation
     let collapsable = new bootstrap.Collapse(element);
