@@ -4,7 +4,7 @@ let force = d3.layout.force()
     .charge(-200)
     .linkDistance(function (d) {
         if (d.type === "major"){ return 50; }
-        return 150;
+        return Math.random()*300;
     })
     .size([width, height]);
 
@@ -33,6 +33,8 @@ d3.json("assets/network.json", function(error, network) {
     nodes.on('click', function (d) {
         d.selected = !d.selected;
         highlight_neighbours(d, nodes, links, network);
+
+        if (d.name === "timeseries"){ show_time_series(); return;}
         show_bootstrap_div(d.name+"-scaling");
     });
 });
@@ -74,11 +76,10 @@ function create_nodes(network){
         .on("mouseover", function (n){
             if (network.a_node_is_highlighted) {return;}
             show_tooltip(n);
-            if (n.name === "timeseries"){ show_time_series();}
         })
-        .on("mouseout", function (d){
+        .on("mouseout", function (n){
             if (network.a_node_is_highlighted) {return;}
-            if (!d.selected){ tooltip.style("opacity", 0);}
+            if (!n.selected){ tooltip.style("opacity", 0);}
         })
         .call(force.drag);
 }
@@ -98,8 +99,6 @@ function show_tooltip(n){
     let html_str = n.name
     if (n.desc !== "none"){ html_str += n.desc; }
 
-    console.log(tooltip)
-
     tooltip.html(html_str)
                 .style("left", (w-width)/2 + "px")
                 .style("top", 10 + "px")
@@ -109,7 +108,7 @@ function show_tooltip(n){
 function show_bootstrap_div(div_name){
     let element = document.getElementById(div_name);
 
-    if (element == null){console.log("Cannot get element", div_name)}
+    if (element == null){ return console.log("Cannot get element", div_name)}
 
     // Create a collapse instance, toggles the collapse element on invocation
     let collapsable = new bootstrap.Collapse(element);

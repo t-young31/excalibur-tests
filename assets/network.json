@@ -6,8 +6,8 @@
     {
       "name": "timeseries",
       "degree": 0,
-      "desc": "none",
-      "katz": 0.2193828694233286,
+      "desc": "<p class=\"tiny\">Temporal relative regression of all benchmarks</p>",
+      "katz": 0.186608635649591,
       "id": 0
     },
     {
@@ -15,8 +15,8 @@
       "name": "clusters",
       "color": "#1f77b4",
       "degree": 2,
-      "desc": "none",
-      "katz": 0.2879252638105215,
+      "desc": "<p class=\"tiny\">Compute clusters within the DiRAC consortium</p>",
+      "katz": 0.2490577633569809,
       "id": 1
     },
     {
@@ -28,7 +28,7 @@
       "color": "#1f77b4",
       "degree": 4,
       "desc": "<p class=\"tiny\">???</p>",
-      "katz": 0.3427121432246245,
+      "katz": 0.3122457941896696,
       "id": 2
     },
     {
@@ -40,7 +40,7 @@
       "color": "#1f77b4",
       "degree": 4,
       "desc": "<p class=\"tiny\">Cambridge Service for Data-Driven Discovery (<a href=\"https://www.hpc.cam.ac.uk/high-performance-computing\">CSD3</a>)</p>",
-      "katz": 0.3427121432246245,
+      "katz": 0.3122457941896696,
       "id": 3
     },
     {
@@ -48,8 +48,8 @@
       "name": "apps",
       "color": "#ff7f0e",
       "degree": 2,
-      "desc": "none",
-      "katz": 0.2686320850050055,
+      "desc": "<p class=\"tiny\">Parallel applications</p>",
+      "katz": 0.2490577633569809,
       "id": 4
     },
     {
@@ -59,9 +59,9 @@
         "gromacs"
       ],
       "color": "#ff7f0e",
-      "degree": 1,
+      "degree": 4,
       "desc": "<p class=\"tiny\">A versatile package to perform molecular dynamics (<a href=\"https://www.gromacs.org/\">GROMACS</a>).</p>",
-      "katz": 0.24624607792242512,
+      "katz": 0.3122457941896696,
       "id": 5
     },
     {
@@ -71,9 +71,9 @@
         "imb"
       ],
       "color": "#ff7f0e",
-      "degree": 1,
-      "desc": "none",
-      "katz": 0.24624607792242512,
+      "degree": 4,
+      "desc": "<p class=\"tiny\">Intel\u00ae MPI Benchmarks (<a href=\"https://www.intel.com/content/www/us/en/developer/articles/technical/intel-mpi-benchmarks.html\">IMB-MPI</a>)</p>",
+      "katz": 0.3122457941896696,
       "id": 6
     },
     {
@@ -81,8 +81,8 @@
       "name": "compilers",
       "color": "#2ca02c",
       "degree": 1,
-      "desc": "none",
-      "katz": 0.25068220365576716,
+      "desc": "<p class=\"tiny\">Compilers</p>",
+      "katz": 0.2199588947085941,
       "id": 7
     },
     {
@@ -92,9 +92,9 @@
         "gcc9"
       ],
       "color": "#2ca02c",
-      "degree": 3,
-      "desc": "none",
-      "katz": 0.3129934800641393,
+      "degree": 5,
+      "desc": "<p class=\"tiny\">GNU Compiler Collection v9 (<a href=\"https://gcc.gnu.org/\">GCC</a>)</p>",
+      "katz": 0.33350277623091745,
       "id": 8
     },
     {
@@ -102,8 +102,8 @@
       "name": "mpi",
       "color": "#d62728",
       "degree": 2,
-      "desc": "none",
-      "katz": 0.28262029490899154,
+      "desc": "<p class=\"tiny\">Message passing interface implementations</p>",
+      "katz": 0.2539897674768086,
       "id": 9
     },
     {
@@ -113,9 +113,9 @@
         "impi"
       ],
       "color": "#d62728",
-      "degree": 3,
-      "desc": "none",
-      "katz": 0.3161872839557982,
+      "degree": 5,
+      "desc": "<p class=\"tiny\">Intel MPI (now <a href=\"https://www.intel.com/content/www/us/en/developer/tools/oneapi/mpi-library.html#gs.ttb1yo\">oneAPI</a>)</p>",
+      "katz": 0.336905858564084,
       "id": 10
     },
     {
@@ -126,9 +126,9 @@
         "omp"
       ],
       "color": "#d62728",
-      "degree": 3,
-      "desc": "none",
-      "katz": 0.3161872839557982,
+      "degree": 5,
+      "desc": "<p class=\"tiny\"><a href=\"https://www.open-mpi.org/\">OpenMPI</a></p>",
+      "katz": 0.336905858564084,
       "id": 11
     }
   ],
@@ -182,6 +182,36 @@
       "type": "major",
       "source": 4,
       "target": 6
+    },
+    {
+      "type": "minor",
+      "source": 5,
+      "target": 8
+    },
+    {
+      "type": "minor",
+      "source": 5,
+      "target": 10
+    },
+    {
+      "type": "minor",
+      "source": 5,
+      "target": 11
+    },
+    {
+      "type": "minor",
+      "source": 6,
+      "target": 8
+    },
+    {
+      "type": "minor",
+      "source": 6,
+      "target": 10
+    },
+    {
+      "type": "minor",
+      "source": 6,
+      "target": 11
     },
     {
       "type": "major",
