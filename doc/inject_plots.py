@@ -668,7 +668,7 @@ class TimeSeriesRegressionPlot(Plot):
 
     def bokeh_components(self) -> Tuple[str, str]:
 
-        plot = figure(title='Time series regression',
+        plot = figure(  # title='Time series regression',
                       width=800,
                       height=400,
                       y_range=(0.6, 4),
