@@ -23,7 +23,16 @@ colors = ('#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b',
 descriptions = {
     'alaska': '???',
     'csd3': 'Cambridge Service for Data-Driven Discovery (<a href="https://www.hpc.cam.ac.uk/high-performance-computing">CSD3</a>)',
-    'gromacs': 'A versatile package to perform molecular dynamics (<a href="https://www.gromacs.org/">GROMACS</a>).'
+    'gromacs': 'A versatile package to perform molecular dynamics (<a href="https://www.gromacs.org/">GROMACS</a>).',
+    'imb': 'Intel® MPI Benchmarks (<a href="https://www.intel.com/content/www/us/en/developer/articles/technical/intel-mpi-benchmarks.html">IMB-MPI</a>)',
+    'gcc9': 'GNU Compiler Collection v9 (<a href="https://gcc.gnu.org/">GCC</a>)',
+    'impi': 'Intel MPI (now <a href="https://www.intel.com/content/www/us/en/developer/tools/oneapi/mpi-library.html#gs.ttb1yo">oneAPI</a>)',
+    'ompi': '<a href="https://www.open-mpi.org/">OpenMPI</a>',
+    'clusters': 'Compute clusters within the DiRAC consortium',
+    'apps': 'Parallel applications',
+    'compilers': 'Compilers',
+    'mpi': 'Message passing interface implementations',
+    'timeseries': 'Temporal relative regression of all benchmarks'
 }
 
 
@@ -130,6 +139,7 @@ class Network(nx.Graph):
 
         self._add_major_to_minor_connections()
         self._add_cluster_connections()
+        self._add_app_connections()
 
         # TODO: Other connections
         return None
@@ -140,6 +150,15 @@ class Network(nx.Graph):
         for major_node, sub_nodes in self._config.items():
             for minor_node in sub_nodes:
                 self.add_edge(str(major_node), str(minor_node))
+
+        return None
+
+    def _add_edge(self, u, v, folders_str):
+        """Add an edge if there is a connection"""
+
+        for alias in v.aliases:
+            if alias in folders_str:
+                self.add_edge(str(u), str(v))
 
         return None
 
@@ -155,20 +174,29 @@ class Network(nx.Graph):
 
             folders_str = ".".join(os.listdir(folder_name))
 
-            def add_edge(name):
-                """Add an edge if there is a connection"""
-
-                for alias in name.aliases:
-                    if alias in folders_str:
-                        self.add_edge(str(cluster_name), str(name))
-
-                return None
-
             for compiler in self._config['compilers']:
-                add_edge(compiler)
+                self._add_edge(cluster_name, compiler, folders_str)
 
             for mpi in self._config['mpi']:
-                add_edge(mpi)
+                self._add_edge(cluster_name, mpi, folders_str)
+
+        return None
+
+    def _add_app_connections(self) -> None:
+        """Add connections between specific application and compilers/mpi"""
+
+        for app_name in self._config['apps']:
+            folders_str = ''
+
+            for cluster_name in self._config['clusters']:
+                folder_name = f'../perflogs/{cluster_name}'
+                folders_str += ".".join(os.listdir(folder_name))
+
+            for compiler in self._config['compilers']:
+                self._add_edge(app_name, compiler, folders_str)
+
+            for mpi in self._config['mpi']:
+                self._add_edge(app_name, mpi, folders_str)
 
         return None
 

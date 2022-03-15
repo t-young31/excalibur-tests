@@ -555,6 +555,10 @@ class TimeSeriesRegressionPlot(Plot):
                 k, v = line.split(':')
                 xs, ys = v.split('|')
 
+                if len(xs) == 0 or len(ys) == 0:
+                    print(f'WARNING: Failed to find any data for {k}')
+                    continue
+
                 self.data[k] = {'x': [float(x) for x in xs.split(',')],
                                 'y': [float(y) for y in ys.split(',')]}
         return None
@@ -664,7 +668,7 @@ class TimeSeriesRegressionPlot(Plot):
 
     def bokeh_components(self) -> Tuple[str, str]:
 
-        plot = figure(title='Time series regression',
+        plot = figure(  # title='Time series regression',
                       width=800,
                       height=400,
                       y_range=(0.6, 4),
