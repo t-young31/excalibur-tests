@@ -36,24 +36,64 @@ def spack_env_dir(hostname):
     return os.path.realpath(dir_path)
 
 
+class DiRACTest(rfm.RegressionTest):
+
+    num_total_cores = variable(int, loggable=True)
+    num_omp_threads = variable(int, loggable=True)
+    num_mpi_tasks = variable(int, loggable=True)
+    num_mpi_tasks_per_node = variable(int, loggable=True)
+    num_nodes = variable(int, loggable=True)
+
+    @run_after('setup')
+    def set_attributes_after_setup(self):
+        """Set the required MPI and OMP ranks/tasks/threads"""
+
+        self.num_mpi_tasks = max(self.num_total_cores//self.num_omp_threads, 1)
+
+        try:
+            cpus_per_node = self._current_partition.processor.num_cpus
+            if cpus_per_node is None:
+                raise AttributeError('Cannot determine the number of cores PP')
+
+            self.num_nodes = math.ceil(self.num_mpi_tasks / cpus_per_node)
+
+        except AttributeError:
+            print('WARNING: Failed to determine the number of nodes required '
+                  'defaulting to 1')
+            self.num_nodes = 1
+
+        self.num_mpi_tasks_per_node = math.ceil(self.num_mpi_tasks / self.num_nodes)
+        self.num_tasks_per_node = self.num_mpi_tasks_per_node
+
+        if self.num_total_cores // self.num_omp_threads == 0:
+            print('WARNING: Had fewer total number of cores than the default '
+                  f'number of OMP threads, using {self.num_total_cores} OMP '
+                  f'threads')
+            self.num_omp_threads = self.num_total_cores
+
+        self.num_cpus_per_task = self.num_omp_threads
+        self.variables = {
+            'OMP_NUM_THREADS': f'{self.num_cpus_per_task}',
+        }
+
+        self.extra_resources = {
+            'mpi': {'num_slots': self.num_mpi_tasks * self.num_cpus_per_task}
+        }
+
+
 # TODO: -----------------------------------------------------------------------
 
 
-class GROMACSBenchmark(rfm.RegressionTest):
+class GROMACSBenchmark(DiRACTest):
     """Base class for a GROMACS benchmark"""
-
-    num_total_cores = None
-    num_omp_threads = None
 
     valid_systems = ['*']
     valid_prog_environs = ['*']
     executable = 'gmx_mpi'
     executable_opts = ['mdrun', '-deffnm', 'benchmark']
     build_system = 'Spack'
-    time_limit = '30m'
+    time_limit = '60m'
     exclusive_access = True
-
-    num_nodes = None
 
     sourcesdir = this_dir
     readonly_files = ['benchmark.tpr']
@@ -67,43 +107,6 @@ class GROMACSBenchmark(rfm.RegressionTest):
         """Set a specific version of GROMACS to use"""
         self.build_system.specs = ['gromacs@2019%gcc@9.3.0^openmpi@4.1.1']
         self.build_system.environment = spack_env_dir(self.current_system.name)
-
-    @run_after('setup')
-    def set_attributes_after_setup(self):
-
-        if not (self.num_total_cores and self.num_omp_threads):
-            raise RuntimeError('Cannot run GROMACS test without defining '
-                               'both the total number of cores and the number '
-                               'of OMP threads to use per MPI rank')
-
-        self.num_tasks = max(self.num_total_cores // self.num_omp_threads, 1)
-
-        try:
-            cpus_per_node = self._current_partition.processor.num_cpus
-            self.num_nodes = math.ceil(self.num_tasks / cpus_per_node)
-
-        except AttributeError:
-            print('WARNING: Failed to determine the number of nodes required '
-                  'defaulting to 1')
-            self.num_nodes = 1
-
-        self.num_tasks_per_node = math.ceil(self.num_tasks / self.num_nodes)
-
-        if self.num_total_cores // self.num_omp_threads == 0:
-            print('WARNING: Had fewer total number of cores than the default '
-                  f'number of OMP threads, using {self.num_total_cores} OMP '
-                  f'threads')
-            self.num_cpus_per_task = self.num_total_cores
-        else:
-            self.num_cpus_per_task = self.num_omp_threads
-
-        self.variables = {
-            'OMP_NUM_THREADS': f'{self.num_cpus_per_task}',
-        }
-
-        self.extra_resources = {
-            'mpi': {'num_slots': self.num_tasks * self.num_cpus_per_task}
-        }
 
     @run_before('sanity')
     def set_sanity_patterns(self):
@@ -125,5 +128,11 @@ class GROMACSBenchmark(rfm.RegressionTest):
 @rfm.simple_test
 class StrongScalingBenchmark(GROMACSBenchmark):
 
-    num_total_cores = parameter([4 * i for i in range(2, 7)])
+    variant = parameter([4 * i for i in range(5, 6)])
     num_omp_threads = 4
+
+    @run_before('setup')
+    def set_total_num_cores(self):
+        """A ReFrame parameter cannot also be a variable, thus assign
+        them to be equal at the start of the setup"""
+        self.num_total_cores = self.variant
