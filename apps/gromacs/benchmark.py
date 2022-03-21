@@ -48,7 +48,7 @@ class DiRACTest(rfm.RegressionTest):
     def set_attributes_after_setup(self):
         """Set the required MPI and OMP ranks/tasks/threads"""
 
-        self.num_mpi_tasks = max(self.num_total_cores//self.num_omp_threads, 1)
+        self.num_mpi_tasks = self.num_tasks = max(self.num_total_cores//self.num_omp_threads, 1)
 
         try:
             cpus_per_node = self._current_partition.processor.num_cpus
