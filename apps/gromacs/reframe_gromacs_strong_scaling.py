@@ -54,7 +54,7 @@ class GROMACSBenchmark(rfm.RegressionTest):
     readonly_files = ['benchmark.tpr']
 
     reference = {
-        '*': {'ns/day': (1, None, None, 's')}
+        '*': {'Rate': (1, None, None, 'ns/day')}
     }
 
     @property
@@ -108,7 +108,9 @@ class GROMACSBenchmark(rfm.RegressionTest):
             'mpi': {'num_slots': self.num_tasks * self.num_cpus_per_task}
         }
 
-        self.tags |= {f'num_procs={self.num_tasks}', f'num_nodes={num_nodes}'}
+        self.tags |= {f'num_procs={self.num_tasks}',
+                      f'num_nodes={num_nodes}',
+                      f'num_tasks_per_node={self.num_tasks_per_node}'}
 
     @run_before('sanity')
     def set_sanity_patterns(self):
@@ -122,19 +124,19 @@ class GROMACSBenchmark(rfm.RegressionTest):
         """Set the regex performance pattern to locate"""
 
         self.perf_patterns = {
-            'ns/day': sn.extractsingle('Performance.+', self.stderr, 0,
-                                       lambda x: float(x.split()[1]))
+            'Rate': sn.extractsingle('Performance.+', self.stderr, 0,
+                                     lambda x: float(x.split()[1]))
         }
 
 
 @rfm.simple_test
 class StrongScalingBenchmark(GROMACSBenchmark):
 
-    variant = parameter([4*i for i in range(2, 7)])
+    _total_num_cores = parameter([4 * i for i in range(2, 7)])
 
     @property
     def _total_n_cores(self) -> int:
-        return self.variant
+        return self._total_num_cores
 
     @property
     def _num_omp_threads(self) -> int:
