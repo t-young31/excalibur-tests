@@ -7,8 +7,8 @@ from typing import Tuple, Union, List
 
 
 config = {
-    'clusters':  ['alaska', 'csd3'],
-    'apps':      ['gromacs', 'imb'],
+    'clusters':  ['csd3'],
+    'apps':      ['gromacs'],
     'compilers': ['gcc9'],
     'mpi':       ['impi', ('ompi', ('openmpi', 'omp'))]
 }
@@ -21,17 +21,16 @@ colors = ('#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b',
 
 # Long form descriptions of terms in config
 descriptions = {
-    'alaska': '???',
-    'csd3': 'Cambridge Service for Data-Driven Discovery (<a href="https://www.hpc.cam.ac.uk/high-performance-computing">CSD3</a>)',
-    'gromacs': 'A versatile package to perform molecular dynamics (<a href="https://www.gromacs.org/">GROMACS</a>).',
-    'imb': 'Intel® MPI Benchmarks (<a href="https://www.intel.com/content/www/us/en/developer/articles/technical/intel-mpi-benchmarks.html">IMB-MPI</a>)',
-    'gcc9': 'GNU Compiler Collection v9 (<a href="https://gcc.gnu.org/">GCC</a>)',
-    'impi': 'Intel MPI (now <a href="https://www.intel.com/content/www/us/en/developer/tools/oneapi/mpi-library.html#gs.ttb1yo">oneAPI</a>)',
-    'ompi': '<a href="https://www.open-mpi.org/">OpenMPI</a>',
-    'clusters': 'Compute clusters within the DiRAC consortium',
-    'apps': 'Parallel applications',
-    'compilers': 'Compilers',
-    'mpi': 'Message passing interface implementations',
+    'csd3':       'Cambridge Service for Data-Driven Discovery (<a href="https://www.hpc.cam.ac.uk/high-performance-computing">CSD3</a>)',
+    'gromacs':    'A versatile package to perform molecular dynamics (<a href="https://www.gromacs.org/">GROMACS</a>).',
+    'imb':        'Intel® MPI Benchmarks (<a href="https://www.intel.com/content/www/us/en/developer/articles/technical/intel-mpi-benchmarks.html">IMB-MPI</a>)',
+    'gcc9':       'GNU Compiler Collection v9 (<a href="https://gcc.gnu.org/">GCC</a>)',
+    'impi':       'Intel MPI (now <a href="https://www.intel.com/content/www/us/en/developer/tools/oneapi/mpi-library.html#gs.ttb1yo">oneAPI</a>)',
+    'ompi':       '<a href="https://www.open-mpi.org/">OpenMPI</a>',
+    'clusters':   'Compute clusters within the DiRAC consortium',
+    'apps':       'Parallel applications',
+    'compilers':  'Compilers',
+    'mpi':        'Message passing interface implementations',
     'timeseries': 'Temporal relative regression of all benchmarks'
 }
 
