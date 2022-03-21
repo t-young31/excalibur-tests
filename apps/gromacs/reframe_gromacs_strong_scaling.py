@@ -71,6 +71,11 @@ class GROMACSBenchmark(rfm.RegressionTest):
     @run_after('setup')
     def set_attributes_after_setup(self):
 
+        if not (self.num_total_cores and self.num_omp_threads):
+            raise RuntimeError('Cannot run GROMACS test without defining '
+                               'both the total number of cores and the number '
+                               'of OMP threads to use per MPI rank')
+
         self.num_tasks = max(self.num_total_cores // self.num_omp_threads, 1)
 
         try:

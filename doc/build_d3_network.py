@@ -92,6 +92,7 @@ class Network(nx.Graph):
         """Add the required attribute"""
 
         for node in self.nodes:
+            self.nodes[node]['selected'] = False
             self.nodes[node]['degree'] = len(list(self.neighbors(node)))
 
             if str(node) in descriptions:
