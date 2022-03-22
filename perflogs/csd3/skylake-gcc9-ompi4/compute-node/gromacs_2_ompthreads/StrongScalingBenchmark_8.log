@@ -1,0 +1,1 @@
+2022-03-22T19:38:40|reframe 3.11.0-dev.3+39984b77|StrongScalingBenchmark %variant=8 @csd3:compute-node+default|jobid=57451165|Rate=60.338|units=ns/day|num_total_cores=8|num_mpi_tasks=4|num_omp_threads=2|num_nodes=1|num_mpi_tasks_per_node=4|ref=1|(l=null, u=null)
