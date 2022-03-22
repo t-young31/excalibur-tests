@@ -1,1 +1,1 @@
-2022-03-21T14:07:02|reframe 3.11.0-dev.3+39984b77|StrongScalingBenchmark %num_total_cores=24 @cosma8:compute-node+default|jobid=4972809|Rate=90.111|units=ns/day|num_total_cores=null|num_mpi_tasks=null|num_omp_threads=None|num_nodes=1|num_tasks_per_node=null|ref=1|(l=null, u=null)
+2022-03-21T14:07:02|reframe 3.11.0-dev.3+39984b77|StrongScalingBenchmark %variant=24 @cosma8:compute-node+default|jobid=4972809|Rate=90.111|units=ns/day|num_total_cores=24|num_mpi_tasks=6|num_omp_threads=4|num_nodes=1|num_tasks_per_node=6|ref=1|(l=null, u=null)
