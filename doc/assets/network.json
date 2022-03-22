@@ -5,31 +5,21 @@
   "nodes": [
     {
       "name": "timeseries",
+      "selected": false,
       "degree": 0,
       "desc": "<p class=\"tiny\">Temporal relative regression of all benchmarks</p>",
-      "katz": 0.186608635649591,
+      "katz": 0.2386008369381546,
       "id": 0
     },
     {
       "type": "major",
       "name": "clusters",
       "color": "#1f77b4",
-      "degree": 2,
+      "selected": false,
+      "degree": 1,
       "desc": "<p class=\"tiny\">Compute clusters within the DiRAC consortium</p>",
-      "katz": 0.2490577633569809,
+      "katz": 0.27547293804459844,
       "id": 1
-    },
-    {
-      "name": "alaska",
-      "type": "minor",
-      "aliases": [
-        "alaska"
-      ],
-      "color": "#1f77b4",
-      "degree": 4,
-      "desc": "<p class=\"tiny\">???</p>",
-      "katz": 0.3122457941896696,
-      "id": 2
     },
     {
       "name": "csd3",
@@ -38,19 +28,21 @@
         "csd3"
       ],
       "color": "#1f77b4",
+      "selected": false,
       "degree": 4,
       "desc": "<p class=\"tiny\">Cambridge Service for Data-Driven Discovery (<a href=\"https://www.hpc.cam.ac.uk/high-performance-computing\">CSD3</a>)</p>",
-      "katz": 0.3122457941896696,
-      "id": 3
+      "katz": 0.3687214209639739,
+      "id": 2
     },
     {
       "type": "major",
       "name": "apps",
       "color": "#ff7f0e",
-      "degree": 2,
+      "selected": false,
+      "degree": 1,
       "desc": "<p class=\"tiny\">Parallel applications</p>",
-      "katz": 0.2490577633569809,
-      "id": 4
+      "katz": 0.27547293804459844,
+      "id": 3
     },
     {
       "name": "gromacs",
@@ -59,31 +51,21 @@
         "gromacs"
       ],
       "color": "#ff7f0e",
+      "selected": false,
       "degree": 4,
       "desc": "<p class=\"tiny\">A versatile package to perform molecular dynamics (<a href=\"https://www.gromacs.org/\">GROMACS</a>).</p>",
-      "katz": 0.3122457941896696,
-      "id": 5
-    },
-    {
-      "name": "imb",
-      "type": "minor",
-      "aliases": [
-        "imb"
-      ],
-      "color": "#ff7f0e",
-      "degree": 4,
-      "desc": "<p class=\"tiny\">Intel\u00ae MPI Benchmarks (<a href=\"https://www.intel.com/content/www/us/en/developer/articles/technical/intel-mpi-benchmarks.html\">IMB-MPI</a>)</p>",
-      "katz": 0.3122457941896696,
-      "id": 6
+      "katz": 0.3687214209639739,
+      "id": 4
     },
     {
       "type": "major",
       "name": "compilers",
       "color": "#2ca02c",
+      "selected": false,
       "degree": 1,
       "desc": "<p class=\"tiny\">Compilers</p>",
-      "katz": 0.2199588947085941,
-      "id": 7
+      "katz": 0.2725609207709258,
+      "id": 5
     },
     {
       "name": "gcc9",
@@ -92,19 +74,21 @@
         "gcc9"
       ],
       "color": "#2ca02c",
-      "degree": 5,
+      "selected": false,
+      "degree": 3,
       "desc": "<p class=\"tiny\">GNU Compiler Collection v9 (<a href=\"https://gcc.gnu.org/\">GCC</a>)</p>",
-      "katz": 0.33350277623091745,
-      "id": 8
+      "katz": 0.3396011202942515,
+      "id": 6
     },
     {
       "type": "major",
       "name": "mpi",
       "color": "#d62728",
+      "selected": false,
       "degree": 2,
       "desc": "<p class=\"tiny\">Message passing interface implementations</p>",
-      "katz": 0.2539897674768086,
-      "id": 9
+      "katz": 0.30721405576595884,
+      "id": 7
     },
     {
       "name": "impi",
@@ -113,10 +97,11 @@
         "impi"
       ],
       "color": "#d62728",
-      "degree": 5,
+      "selected": false,
+      "degree": 3,
       "desc": "<p class=\"tiny\">Intel MPI (now <a href=\"https://www.intel.com/content/www/us/en/developer/tools/oneapi/mpi-library.html#gs.ttb1yo\">oneAPI</a>)</p>",
-      "katz": 0.336905858564084,
-      "id": 10
+      "katz": 0.34306641949512234,
+      "id": 8
     },
     {
       "name": "ompi",
@@ -126,10 +111,11 @@
         "omp"
       ],
       "color": "#d62728",
-      "degree": 5,
+      "selected": false,
+      "degree": 3,
       "desc": "<p class=\"tiny\"><a href=\"https://www.open-mpi.org/\">OpenMPI</a></p>",
-      "katz": 0.336905858564084,
-      "id": 11
+      "katz": 0.34306641949512234,
+      "id": 9
     }
   ],
   "links": [
@@ -139,9 +125,9 @@
       "target": 2
     },
     {
-      "type": "major",
-      "source": 1,
-      "target": 3
+      "type": "minor",
+      "source": 2,
+      "target": 6
     },
     {
       "type": "minor",
@@ -151,67 +137,32 @@
     {
       "type": "minor",
       "source": 2,
-      "target": 10
-    },
-    {
-      "type": "minor",
-      "source": 2,
-      "target": 11
-    },
-    {
-      "type": "minor",
-      "source": 3,
-      "target": 8
-    },
-    {
-      "type": "minor",
-      "source": 3,
-      "target": 10
-    },
-    {
-      "type": "minor",
-      "source": 3,
-      "target": 11
+      "target": 9
     },
     {
       "type": "major",
-      "source": 4,
-      "target": 5
+      "source": 3,
+      "target": 4
     },
     {
-      "type": "major",
+      "type": "minor",
       "source": 4,
       "target": 6
     },
     {
       "type": "minor",
-      "source": 5,
+      "source": 4,
       "target": 8
     },
     {
       "type": "minor",
+      "source": 4,
+      "target": 9
+    },
+    {
+      "type": "major",
       "source": 5,
-      "target": 10
-    },
-    {
-      "type": "minor",
-      "source": 5,
-      "target": 11
-    },
-    {
-      "type": "minor",
-      "source": 6,
-      "target": 8
-    },
-    {
-      "type": "minor",
-      "source": 6,
-      "target": 10
-    },
-    {
-      "type": "minor",
-      "source": 6,
-      "target": 11
+      "target": 6
     },
     {
       "type": "major",
@@ -220,13 +171,8 @@
     },
     {
       "type": "major",
-      "source": 9,
-      "target": 10
-    },
-    {
-      "type": "major",
-      "source": 9,
-      "target": 11
+      "source": 7,
+      "target": 9
     }
   ]
 }

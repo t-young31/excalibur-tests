@@ -1,0 +1,1 @@
+2022-03-21T15:48:48|reframe 3.11.0-dev.3+39984b77|StrongScalingBenchmark %variant=8 @cosma8:compute-node+default|jobid=4972983|Rate=16.031|units=ns/day|num_total_cores=8|num_mpi_tasks=2|num_omp_threads=4|num_nodes=1|num_mpi_tasks_per_node=2|ref=1|(l=null, u=null)

@@ -22,20 +22,23 @@ d3.json("assets/network.json", function(error, network) {
     // network parameter is built from the json...
     force.nodes(network.nodes).links(network.links).start();
 
-    network.a_node_is_highlighted = false;
-
     let links = create_links(network);
     let nodes = create_nodes(network);
     force.on("tick", function() { update_positions(nodes, links); });
 
     network.link_dict = create_network_link_dict(network);
 
-    nodes.on('click', function (d) {
-        d.selected = !d.selected;
-        highlight_neighbours(d, nodes, links, network);
+    nodes.on('click', function (n) {
+        n.selected = !n.selected;
 
-        if (d.name === "timeseries"){ show_time_series(); return;}
-        show_bootstrap_div(d.name+"-scaling");
+        if (n.selected){
+            highlight_neighbours(n, nodes, links, network);
+            show_tooltip(n);
+        }
+        else{ set_default_state(nodes, links, network); }
+
+        if (n.name === "timeseries"){ show_time_series(); return;}
+        show_bootstrap_div(n.name+"-scaling");
     });
 });
 
@@ -74,14 +77,25 @@ function create_nodes(network){
             return d3.rgb(n.color);
         })
         .on("mouseover", function (n){
-            if (network.a_node_is_highlighted) {return;}
-            show_tooltip(n);
+            if (!a_node_is_selected(network)) {show_tooltip(n);}
         })
-        .on("mouseout", function (n){
-            if (network.a_node_is_highlighted) {return;}
-            if (!n.selected){ tooltip.style("opacity", 0);}
+        .on("mouseout", function (_){
+            if (!a_node_is_selected(network)) {tooltip.style("opacity", 0);}
         })
         .call(force.drag);
+}
+
+function set_default_state(nodes, links, network){
+    // Set the default state for the network
+
+    network.nodes.forEach(function (n){n.selected = false;});
+    nodes.style("opacity", default_node_opacity);
+    tooltip.style("opacity", 0);
+    links.style("opacity", 1).style("stroke-width", 2);
+}
+
+function a_node_is_selected(network){
+    return network.nodes.some(function (n){return n.selected === true;});
 }
 
 function default_node_opacity(node){
@@ -135,28 +149,18 @@ function highlight_neighbours(o, nodes, links, network){
         return network.link_dict[a.index + "," + b.index];
     }
 
-    if (!network.a_node_is_highlighted) {
+    nodes.style("opacity", function (d) {
+        if (d.id === o.id){ return 1.0; }
+        if (o.type === "major"){ return 0.3; }
+        return (are_neighbours(d, o) || are_neighbours(o, d)) ? 0.8 : 0.3;
+    });
 
-        nodes.style("opacity", function (d) {
-            if (d.id === o.id){ return 1.0; }
-            if (o.type === "major"){ return 0.3; }
-            return (are_neighbours(d, o) || are_neighbours(o, d)) ? 0.8 : 0.3;
-        });
-
-        links.style("opacity", function (d) {
-            return (o.id===d.source.id ||  o.id===d.target.id) ? 0.8 : 0.3;}
-        )
-            .style("stroke-width", function (d) {
-            return (o.id===d.source.id ||  o.id===d.target.id) ? 3 : 2;
-        });
-
-        network.a_node_is_highlighted = true;
-    } else {
-        o.selected = false;
-        nodes.style("opacity", default_node_opacity);
-        links.style("opacity", 1).style("stroke-width", 2);
-        network.a_node_is_highlighted = false;
-    }
+    links.style("opacity", function (d) {
+        return (o.id===d.source.id ||  o.id===d.target.id) ? 0.8 : 0.3;}
+    )
+        .style("stroke-width", function (d) {
+        return (o.id===d.source.id ||  o.id===d.target.id) ? 3 : 2;
+    });
 }
 
 function create_network_link_dict(network){

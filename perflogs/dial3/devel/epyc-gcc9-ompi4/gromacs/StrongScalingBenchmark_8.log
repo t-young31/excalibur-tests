@@ -1,0 +1,1 @@
+2022-03-13T14:41:43|reframe 3.10.1|StrongScalingBenchmark %variant=8 @dial3:devel+default|jobid=91217|Rate=12.154|units=ns/day|num_total_cores=8|num_mpi_tasks=1|num_omp_threads=4|num_nodes=1|num_mpi_tasks_per_node=1|ref=1|(l=null, u=null)

@@ -2,7 +2,8 @@ import os
 import shutil
 import numpy as np
 
-from typing import Dict, Tuple, List, Union, Sequence, Iterator
+from typing import Dict, Tuple, List, Union, Sequence, Iterator, Optional
+from copy import deepcopy
 from datetime import date
 from abc import ABC, abstractmethod
 from glob import glob
@@ -21,9 +22,9 @@ plots = {
     # Bar plot for all clusters using openmpi builds, imb benchmark, PingPong
     # 0: ('bar', 'max_bandwidth', ('*/*openmpi*/imb/*PingPong*/*.log', '*/*omp*/imb/*PingPong*/*.log')),
 
-    0: ('strong_scaling', 'ns/day', 'dial3/devel/*/gromacs/*'),
+    0: ('strong_scaling', 'Rate', '*/*/*/gromacs/*'),
 
-    3: ('time_series_regression', '*', '*')
+    # 3: ('time_series_regression', '*', '*')
 }
 
 colors = {'csd3':      Dark2_6[0],
@@ -139,17 +140,77 @@ class HTMLFile(File):
         return None
 
 
+class Benchmark:
+
+    def __init__(self, metric: str ='*'):
+        """
+        Construct a benchmark
+
+        -----------------------------------------------------------------------
+        Arguments:
+
+            metric: Metric on which the benchmark is defined. If "*" then will
+                    extract based in the position line.
+        """
+
+        self.metric = metric
+        self.value:           Optional[float] = None
+        self.units:           Optional[str] = None
+        self.date:            Optional[date] = None
+
+        self.num_total_cores: Optional[int] = None
+        self.num_omp_threads: Optional[int] = None
+        self.num_nodes:       Optional[int] = None
+
+    def set_from(self, reframe_log_line: str):
+        """Set the benchmark from a reframe log line"""
+        line = reframe_log_line
+
+        self._set_metric(line)
+        self.value = float(self._value_of(self.metric, line))
+        self.units = str(self._value_of('units', line))
+        self._set_date(line)
+
+        self.num_total_cores = int(self._value_of('num_total_cores', line))
+        self.num_omp_threads = int(self._value_of('num_omp_threads', line))
+        self.num_nodes = int(self._value_of('num_nodes', line))
+
+        return None
+
+    def _set_date(self, line):
+        first_item = line.split()[0]
+        self.date = date.fromisoformat(first_item.split('T')[0])
+        return None
+
+    def _set_metric(self, line):
+        """Set the performance metric from the output"""
+
+        try:
+            extracted_metric = line.split('|')[4].split('=')[0]
+        except IndexError:
+            raise RuntimeError(f'Failed to find any metric in: {line}')
+
+        if self.metric != '*' and extracted_metric != self.metric:
+            raise RuntimeError(f'Metric {self.metric} was not at the expected '
+                               f'position in: {line}')
+
+        self.metric = extracted_metric
+        return None
+
+    @staticmethod
+    def _value_of(s, line) -> str:
+        return next(x.split('=')[1] for x in line.split('|') if s in x)
+
+
 class ReFrameLogFile(File):
     """
     ReFrame log file with a format:
 
     #--------------------------------------------------------------------------
-
     2020-08-19T16:20:21+01:00|.|IMB_.|max_bandwidth=3041.25|Mbytes/sec|.|.
     2020-08-19T16:20:21+01:00|.|IMB_.|min_latency=2.05|t[usec]|.|.
     2020-09-09T10:30:12+01:00|.|IMB_.|.|max_bandwidth=3039.31|Mbytes/sec|.|.
     .            .            .   .   .     .                   .        .
-
     #--------------------------------------------------------------------------
 
     where dots denote abbreviated strings
@@ -158,16 +219,16 @@ class ReFrameLogFile(File):
     def __init__(self, filename, metric=None):
 
         self.filename = self._validated(filename)
-
-        self.values:       List[float] = []
-        self.dates:        List[date] = []
+        self.benchmarks = []
 
         if metric is not None:
             self.extract(metric)
 
-    @property
-    def file_lines(self) -> List[str]:
-        return open(self.filename, 'r').readlines()
+    def __str__(self):
+        return self.file_path_truncated
+
+    def __repr__(self):
+        return f'ReFrameLogFile({self.file_path_no_perflogs})'
 
     @property
     def file_path_no_perflogs(self) -> str:
@@ -178,106 +239,41 @@ class ReFrameLogFile(File):
         return f'...{self.filename[-12:-4]}'
 
     @property
-    def metrics(self) -> List[str]:
-        """Performance metrics that are present in this file"""
-        metrics = []
+    def n_cores(self) -> int:
+        """Number ot total cores used for *all* benchmarks in this file"""
+        n_cores = next(b.num_total_cores for b in self.benchmarks)
 
-        for line in self.file_lines:
+        if not all(b.num_total_cores == n_cores for b in self.benchmarks):
+            raise RuntimeError('Failed to determine the number of cores in '
+                               'the log file. Had different values')
 
-            try:
-                metric = line.split('|')[-4].split('=')[0]
-                metrics.append(metric)
-            except IndexError:
-                continue
-
-        return metrics
+        return n_cores
 
     @property
     def has_multiple_values(self) -> bool:
         """Does this log file have multiple values of a metric"""
-        return len(self.values) > 1
-
-    @property
-    def n_cores(self) -> int:
-        """
-        Number of cores that this benchmark used.
-
-        -----------------------------------------------------------------------
-        Returns:
-            (int):
-
-        Raises:
-            (RuntimeError): If the value cannot be determined
-        """
-
-        try:
-            return int(Path(self.filename).stem.split('_')[-1])
-
-        except (IndexError, ValueError):
-            raise RuntimeError('Failed to locate the number of cores used in'
-                               f' {self.filename}. Expecting a format of: '
-                               'xxx_N.log where N is an integer')
-
-    def extract_values(self, metric: str) -> None:
-        """
-        Extract the value of a metric from the file
-
-        -----------------------------------------------------------------------
-        Arguments:
-            metric:
-
-        Raises:
-            (IOError): If the file cannot be found
-            (RuntimeError): If the metric cannot be found
-        """
-
-        self.values.clear()
-
-        try:
-            for line in filter(lambda l: metric in l, self.file_lines):
-
-                pair = next(item for item in line.split('|') if metric in item)
-                self.values.append(float(pair.split('=')[-1]))
-
-        except (StopIteration, ValueError, TypeError, IndexError):
-            raise RuntimeError(f'Failed to find {metric} in {self.filename}')
-
-    def units_of(self, metric: str) -> str:
-        """Extract the units of a particular metric"""
-
-        def first_line_with_metric():
-            return next(l for l in self.file_lines if metric in l)
-
-        def first_item_with_metric_in_item_before(xs):
-            return next(x for i, x in enumerate(xs[1:]) if metric in xs[i])
-
-        try:
-            items = first_line_with_metric().split('|')
-            return first_item_with_metric_in_item_before(items)
-
-        except (StopIteration, ValueError, TypeError, IndexError):
-            raise RuntimeError(f'Failed to find {metric} in {self.filename}')
-
-    def extract_dates(self, metric: str) -> None:
-        """Extract the times at which the metric was evaluated"""
-
-        self.dates.clear()
-
-        try:
-            for line in filter(lambda l: metric in l, self.file_lines):
-                time_str = line.split('T')[0]
-                self.dates.append(date.fromisoformat(time_str))
-
-        except (StopIteration, ValueError, TypeError, IndexError):
-            raise RuntimeError(f'Failed to find {metric} in {self.filename}')
+        return len(self.benchmarks) > 1
 
     def extract(self, metric: str) -> None:
         """Extract the relevant information from a ReFrame log file"""
 
-        self.extract_values(metric)
-        self.extract_dates(metric)
+        for line in open(self.filename, 'r'):
+            benchmark = Benchmark(metric=metric)
+            benchmark.set_from(line)
+            self.benchmarks.append(benchmark)
 
         return None
+
+
+class ReFrameLogFileGroup(list):
+
+    def __init__(self, _list):
+        super().__init__(_list)
+
+    @property
+    def name(self) -> str:
+        """Name of this group, defined by the first different"""
+        return '_'.join(self[0].file_path_no_perflogs.split('/')[:-1])
 
 
 class Plot(ABC):
@@ -410,7 +406,8 @@ class AutoGeneratedPlot(Plot, ABC):
         if len(self._log_files) == 0:
             raise RuntimeError('Cannot determine the units. Had no files')
 
-        return self._log_files[0].units_of(self._metric)
+        return next(b.units for b in self._log_files[0].benchmarks
+                    if b.metric == self._metric)
 
     @property
     def n_files(self) -> int:
@@ -470,15 +467,74 @@ class BarPlot(AutoGeneratedPlot):
 
 class StrongScalingPlot(AutoGeneratedPlot):
 
-    def log_file_that_used(self, n_cores: int) -> ReFrameLogFile:
-        """Obtain the log file that used a defined number of cores"""
+    @staticmethod
+    def _n_diff_chars(string1, string2):
+        return sum(char1 != char2 for char1, char2 in zip(string1, string2))
 
-        try:
-            return next(f for f in self._log_files if f.n_cores == n_cores)
+    @property
+    def _log_file_groups(self,
+                         threshold_n_diff_chars: int = 6
+                         ) -> List[ReFrameLogFileGroup]:
+        """Group ReFrame log files based on the first different component to
+        the file paths"""
 
-        except (RuntimeError, StopIteration):
-            raise RuntimeError(f"Failed to find a log file that used "
-                               f"*{n_cores}* cores")
+        if len(self._log_files) == 0:
+            raise RuntimeError('Cannot group log files. Had 0')
+
+        files = deepcopy(self._log_files)
+        groups = []
+
+        for f in files:
+            added = False
+
+            for group in groups:
+                if (self._n_diff_chars(f.filename, group[0].filename)
+                        < threshold_n_diff_chars):
+                    group.append(f)
+                    added = True
+                    break
+
+            if not added:
+                # The filename is not similar enough to any other groups,
+                # so create a new one
+                groups.append(ReFrameLogFileGroup([f]))
+
+        return groups
+
+    @staticmethod
+    def _plot_line(plot, log_file_group, color) -> None:
+        """Plot a line with markers for a group of log files"""
+
+        fs = sorted(log_file_group, key=lambda f: f.n_cores)
+        xs = [f.n_cores for f in fs]
+
+        # TODO: What do to with multiple metrics in the same file?
+        source = ColumnDataSource(
+            data={'n_cores': xs,
+                  'values': [f.benchmarks[-1].value for f in fs],
+                  'descs': [f.file_path_no_perflogs for f in fs],
+                  'date': [f.benchmarks[-1].date for f in fs],
+                  'omp': [f.benchmarks[-1].num_omp_threads for f in fs],
+                  'n_nodes': [f.benchmarks[-1].num_nodes for f in fs]
+                  })
+
+        plot.circle(source.data['n_cores'],
+                    source.data['values'],
+                    fill_color="white",
+                    size=12,
+                    color=color,
+                    legend_label=log_file_group.name
+                    )
+
+        plot.line(x='n_cores',
+                  y='values',
+                  line_width=2,
+                  source=source,
+                  name=log_file_group.name,
+                  color=color
+                  )
+
+        return None
 
     def bokeh_components(self) -> Tuple[str, str]:
         """Construct the bokeh div and script for a line plot, where the final
@@ -489,35 +545,20 @@ class StrongScalingPlot(AutoGeneratedPlot):
                       height=400,
                       max_width=900)
 
+        for group, color in zip(self._log_file_groups, Dark2_6):
+            self._plot_line(plot, group, color)
+
         hover = HoverTool(tooltips=[('Description', '@descs'),
                                     ('Value', '@values'),
-                                    # ('Date', '@date')
+                                    ('Date', '@date'),
+                                    ('# OMP threads', '@omp'),
+                                    ('# nodes', '@n_nodes')
                                     ],
-                          mode='vline')
-
-        xs = sorted([f.n_cores for f in self._log_files])
-        fs = [self.log_file_that_used(n_cores=x) for x in xs]
-
-        # TODO: What do to with multiple metrics in the same file?
-        source = ColumnDataSource(
-            data={'n_cores': xs,
-                  'values': [f.values[0] for f in fs],
-                  'descs': [f.file_path_no_perflogs for f in fs],
-                  # 'date': [f.dates[0] for f in fs]
-                  })
-
-        plot.circle(source.data['n_cores'],
-                    source.data['values'],
-                    fill_color="white",
-                    size=12)
-
-        plot.line(x='n_cores',
-                  y='values',
-                  line_width=2,
-                  source=source
-                  )
+                          names=[group.name for group in self._log_file_groups],
+                          mode='mouse')
 
         plot.add_tools(hover)
+        plot.legend.location = "bottom_right"
         plot.xaxis.axis_label = 'Number of cores'
         plot.yaxis.axis_label = f'{self._metric} / {self._units}'
         self._set_default_style(plot)
