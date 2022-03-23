@@ -113,7 +113,7 @@ site_configuration = {
                     'scheduler': 'pbs',
                     'launcher': 'mpirun',
                     'environs': ['default'],
-                    'max_jobs': 16,
+                    'max_jobs': 2,
                 },
             ]
         },  # end Tesseract

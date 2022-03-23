@@ -1,0 +1,1 @@
+2022-03-23T08:12:38|reframe 3.11.0-dev.3+39984b77|StrongScalingBenchmark %variant=16 @tesseract:compute-node+default|jobid=77146.tesseract-services1|Rate=43.642|units=ns/day|num_total_cores=16|num_mpi_tasks=8|num_omp_threads=2|num_nodes=1|num_mpi_tasks_per_node=8|ref=1|(l=null, u=null)

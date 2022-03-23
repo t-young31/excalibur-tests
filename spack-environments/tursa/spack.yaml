@@ -23,6 +23,19 @@ spack:
       modules: []
       environment: {}
       extra_rpaths: []
+  - compiler:
+      spec: gcc@9.3.0
+      paths:
+        cc: /home/do006/do006/dc-youn5/.local/opt/spack/linux-rhel8-zen/gcc-8.4.1/gcc-9.3.0-u2saaxxumbig36oikbqo7dyqbrbpua5p/bin/gcc
+        cxx: /home/do006/do006/dc-youn5/.local/opt/spack/linux-rhel8-zen/gcc-8.4.1/gcc-9.3.0-u2saaxxumbig36oikbqo7dyqbrbpua5p/bin/g++
+        f77: /home/do006/do006/dc-youn5/.local/opt/spack/linux-rhel8-zen/gcc-8.4.1/gcc-9.3.0-u2saaxxumbig36oikbqo7dyqbrbpua5p/bin/gfortran
+        fc: /home/do006/do006/dc-youn5/.local/opt/spack/linux-rhel8-zen/gcc-8.4.1/gcc-9.3.0-u2saaxxumbig36oikbqo7dyqbrbpua5p/bin/gfortran
+      flags: {}
+      operating_system: rhel8
+      target: x86_64
+      modules: []
+      environment: {}
+      extra_rpaths: []
   packages:
     autoconf:
       externals:

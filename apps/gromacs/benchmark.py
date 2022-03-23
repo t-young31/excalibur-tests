@@ -128,7 +128,7 @@ class GROMACSBenchmark(DiRACTest):
 @rfm.simple_test
 class StrongScalingBenchmark(GROMACSBenchmark):
 
-    variant = parameter([4 * i for i in range(5, 6)])
+    variant = parameter([4 * i for i in range(1, 6)])
     num_omp_threads = 4
 
     @run_before('setup')

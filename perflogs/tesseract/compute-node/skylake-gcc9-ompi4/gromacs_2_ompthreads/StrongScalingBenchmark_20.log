@@ -1,0 +1,2 @@
+2022-03-23T08:04:02|reframe 3.11.0-dev.3+39984b77|StrongScalingBenchmark %variant=20 @tesseract:compute-node+default|jobid=77139.tesseract-services1|Rate=52.892|units=ns/day|num_total_cores=20|num_mpi_tasks=10|num_omp_threads=2|num_nodes=1|num_mpi_tasks_per_node=10|ref=1|(l=null, u=null)
+2022-03-23T08:12:38|reframe 3.11.0-dev.3+39984b77|StrongScalingBenchmark %variant=20 @tesseract:compute-node+default|jobid=77147.tesseract-services1|Rate=52.96|units=ns/day|num_total_cores=20|num_mpi_tasks=10|num_omp_threads=2|num_nodes=1|num_mpi_tasks_per_node=10|ref=1|(l=null, u=null)
