@@ -64,15 +64,14 @@ class GROMACSBenchmark:
         """Install and load a gromacs install. This will take some time!"""
 
         run_subprocess('spack', 'compiler', 'find')
-        run_subprocess('spack', 'install', self.spec)
-        run_subprocess('spack', 'load', self.spec)
+        run_subprocess('spack', 'install', '--reuse', self.spec)
 
         return None
 
     def run(self) -> None:
         """Run the benchmark"""
 
-        if shutil.which('gmx_mpi') is None:
+        if self.gmx_path is None:
             print('WARNING: Failed to run benchmark. gmx_mpi not present')
             return None
 
@@ -80,10 +79,26 @@ class GROMACSBenchmark:
         n_tasks = self.n_cores//2
 
         self.stdout, self.stderr = run_subprocess(
-            'mpirun', '-np', f'{n_tasks}', 'gmx_mpi', 'mdrun', '-deffnm', 'benchmark'
+            self.mpi_run_path, '-np', f'{n_tasks}', f'{self.gmx_path}',
+            'mdrun', '-deffnm', 'benchmark'
         )
 
         return None
+
+    @property
+    def gmx_path(self) -> Optional[str]:
+        """Path to the spack installed version of Gromacs"""
+        stdout, _ = run_subprocess('spack', 'location', '-i', self.spec)
+
+        if len(stdout) == 0 or 'error' in stdout[0]:
+            return None
+
+        return os.path.join(stdout[0], 'bin', 'gmx_mpi')
+
+    @property
+    def mpi_run_path(self) -> str:
+        stdout, _ = run_subprocess('spack', 'location', '-i', 'openmpi')
+        return os.path.join(stdout[0], 'bin', 'mpirun')
 
     @property
     def performance(self) -> Optional[float]:
@@ -130,6 +145,7 @@ class GROMACSBenchmarks(list):
 
         if len(self) == 0:
             print('WARNING: Had no benchmarks to run')
+            return
 
         self[0].install()
 
@@ -148,14 +164,17 @@ class GROMACSBenchmarks(list):
         """
         Evaluate the deviation from a linear line that these set of points make
         """
-        if any(y is None for y in ys):
-            print('WARNING: Some target y values were None')
+
+        _xs = np.array([x for x, y in zip(xs, ys) if x and y])
+        _ys = np.array([y for x, y in zip(xs, ys) if x and y])
+
+        if len(ys) == 0:
+            print('WARNING: No target y values were defined')
             return -1
 
-        xs, ys = np.array(xs), np.array(ys)
-        m, c, _, _, _ = linregress(xs, ys)
+        m, c, _, _, _ = linregress(_xs, _ys)
 
-        return np.sqrt(np.mean(np.square(ys - m*xs + c)))
+        return np.sqrt(np.mean(np.square(_ys - m*_xs + c)))
 
     def print_results(self) -> None:
         """Print the results of the benchmarks on each number of cores"""
@@ -182,6 +201,6 @@ if __name__ == '__main__':
 
     install_compiler('gcc@9.3.0')
     benchmarks = GROMACSBenchmarks('gromacs@2019%gcc@9.3.0^openmpi@4.1.1',
-                                   n_cores=range(2, mp.cpu_count(), 2))
+                                   n_cores=range(4, mp.cpu_count(), 4))
     benchmarks.run()
     benchmarks.print_results()
