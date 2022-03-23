@@ -34,7 +34,10 @@ install_conda () {
     exit 1
   fi
 
-  bash miniconda_installer.sh -b -p "$PWD/miniforge"
+  if [ ! -d "$PWD/miniforge" ]; then
+    bash miniconda_installer.sh -b -p "$PWD/miniforge"
+  fi
+
   eval "$("$PWD"/miniforge/bin/conda shell.bash hook)"
   rm -rf miniconda_installer.sh
 }
