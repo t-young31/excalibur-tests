@@ -1,0 +1,1 @@
+2022-03-24T01:40:03|reframe 3.11.0-dev.4+8d419443|StrongScalingBenchmark %variant=12 @tursa:cpu-compute-node+default|jobid=49984|Rate=58.46|units=ns/day|num_total_cores=12|num_mpi_tasks=6|num_omp_threads=2|num_nodes=1|num_mpi_tasks_per_node=6|ref=1|(l=null, u=null)
