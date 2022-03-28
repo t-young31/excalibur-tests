@@ -23,7 +23,7 @@ ensure_conda_exists(){
 install_conda () {
   # Install conda using miniforge
 
-  arch=$(eval "uname -m")
+  arch=$(uname -m)
 
   if [ "$arch" == "arm64" ]; then
     curl -L "https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-Linux-aarch64.sh" > miniconda_installer.sh
