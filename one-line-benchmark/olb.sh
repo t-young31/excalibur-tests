@@ -4,7 +4,7 @@
 check_os(){
   # Check that this is running on a supported OS
 
-  if [ "$(eval "uname")" != "Linux" ]; then
+  if [ "$(uname)" != "Linux" ]; then
   echo "Cannot run the benchmark on anything but a Linux OS"
   exit 1
 fi
