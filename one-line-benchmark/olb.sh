@@ -1,3 +1,4 @@
+#!/bin/bash
 # DiRAC one line benchmark
 
 
@@ -5,9 +6,9 @@ check_os(){
   # Check that this is running on a supported OS
 
   if [ "$(uname)" != "Linux" ]; then
-  echo "Cannot run the benchmark on anything but a Linux OS"
-  exit 1
-fi
+    echo "Cannot run the benchmark on anything but a Linux OS"
+    exit 1
+  fi
 }
 
 
@@ -21,18 +22,9 @@ ensure_conda_exists(){
 
 
 install_conda () {
-  # Install conda using miniforge
+  # Install conda using MiniForge
 
-  arch=$(uname -m)
-
-  if [ "$arch" == "arm64" ]; then
-    curl -L "https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-Linux-aarch64.sh" > miniconda_installer.sh
-  elif [ "$arch" == "x86_64" ]; then
-    curl -L "https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-Linux-x86_64.sh" > miniconda_installer.sh
-  else
-    echo "Cannot install miniconda for arch = $arch"
-    exit 1
-  fi
+  curl -L "https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-$(uname)-$(uname -m).sh" > miniconda_installer.sh
 
   if [ ! -d "$PWD/miniforge" ]; then
     bash miniconda_installer.sh -b -p "$PWD/miniforge"
