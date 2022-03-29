@@ -19,17 +19,20 @@ def run_subprocess(*args, print_error=True) -> Tuple[list, list]:
     process = Popen(args, stdout=PIPE, stderr=PIPE)
     bstdout, bstderr = process.communicate()
 
-    stdout = [l.decode().strip() for l in bstdout.split(b'\n')]
-    stderr = [l.decode().strip() for l in bstderr.split(b'\n')]
+    def decoded(byte_string):
+        return [l.decode().strip() for l in byte_string.split(b'\n')]
+
+    stderr = decoded(bstderr)
 
     for line in stderr:
         if print_error and len(line.split()) > 0:
             print('STDERR:', line)
 
-    return stdout, stderr
+    return decoded(bstdout), stderr
 
 
-def install_compiler(spec) -> None:
+def install_compiler(spec: str) -> None:
+    """Install a compiler based on a spack specification e.g. gcc@9.3.0"""
 
     run_subprocess('spack', 'compiler', 'find')
     stdout, _ = run_subprocess('spack', 'compilers')
@@ -43,7 +46,7 @@ def install_compiler(spec) -> None:
 
     compiler_dir = stdout[0]
     run_subprocess('spack', 'compiler', 'find', compiler_dir)
-    run_subprocess('spack', 'load', 'gcc@9.3.0')
+    run_subprocess('spack', 'load', spec)
 
     return None
 
@@ -73,10 +76,10 @@ class GROMACSBenchmark:
 
         if self.gmx_path is None:
             print('WARNING: Failed to run benchmark. gmx_mpi not present')
-            return None
+            return
 
-        os.environ['OMP_NUM_THREADS'] = '2'
-        n_tasks = self.n_cores//2
+        os.environ['OMP_NUM_THREADS'] = str(OMP_NUM_THREADS)
+        n_tasks = self.n_cores//int(OMP_NUM_THREADS)
 
         self.stdout, self.stderr = run_subprocess(
             self.mpi_run_path, '-np', f'{n_tasks}', f'{self.gmx_path}',
@@ -105,7 +108,7 @@ class GROMACSBenchmark:
 
         if self.stderr is None:
             print('WARNING: Failed to extract the performance. No stderr')
-            return None
+            return
 
         for line in self.stderr:
             if 'Performance:' in line and len(line.split()) == 3:
@@ -115,18 +118,22 @@ class GROMACSBenchmark:
         return None
 
     @property
+    def pickle_filename(self) -> str:
+        return f'{self}.p'
+
+    @property
     def cache_exists(self) -> bool:
-        return os.path.exists(f"{self}.p")
+        return os.path.exists(self.pickle_filename)
 
     def save(self) -> None:
         if self.performance is None:
             print('WARNING: Performance metric not found. Not saving')
             return
 
-        return pickle.dump(self.__dict__, open(f'{self}.p', 'wb'))
+        return pickle.dump(self.__dict__, open(self.pickle_filename, 'wb'))
 
     def load(self) -> None:
-        self.__dict__.update(pickle.load(open(f'{self}.p', 'rb')))
+        self.__dict__.update(pickle.load(open(self.pickle_filename, 'rb')))
 
 
 class GROMACSBenchmarks(list):
@@ -183,6 +190,7 @@ class GROMACSBenchmarks(list):
         print('-------------------------------------------------------------\n'
               'Raw results:\n'
               'Num cores    Performance (ns/day)')
+
         for total_n_cores, performance in zip(ns, perfs):
             print(f'{total_n_cores:<10}       {performance}')
 
@@ -198,6 +206,8 @@ class GROMACSBenchmarks(list):
 if __name__ == '__main__':
 
     print('Starting GROMACS benchmark...')
+
+    OMP_NUM_THREADS = 2
 
     install_compiler('gcc@9.3.0')
     benchmarks = GROMACSBenchmarks('gromacs@2019%gcc@9.3.0^openmpi@4.1.1',
