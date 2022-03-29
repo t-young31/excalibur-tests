@@ -62,7 +62,7 @@ run_gromacs_benchmark(){
   cd gromacs || return
 
   # TODO: Change branch
-  prefix="https://raw.githubusercontent.com/t-young31/excalibur-tests/olb/one-line-benchmark/gromacs"
+  prefix="https://raw.githubusercontent.com/t-young31/excalibur-tests/main/one-line-benchmark/gromacs"
   curl -L "$prefix/benchmark.tpr" > benchmark.tpr
   curl -L "$prefix/benchmark.py" > benchmark.py
   python benchmark.py
